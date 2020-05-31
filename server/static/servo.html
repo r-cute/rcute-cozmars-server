@@ -1,0 +1,53 @@
+<html><head><title>Cozmars</title></head><body>
+<style>
+	body{text-align:center;max-width:400px}
+	input[type=range]{width:300px;}
+	div{clear:both;}
+	.top{vertical-align: top}
+	.bottom{vertical-align: bottom}
+	.right{float:right;}
+	.left{float:left;}
+	h2{margin-top: 80px;margin-bottom: 5px}
+	h3{margin: 0px;clear: both}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
+<script>
+	function js_alter(b, src){if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}function q(d){return document.querySelector(d)}function sleep(sec){return new Promise((r,j)=>{setTimeout(r,sec*1000)})}
+	js_alter(typeof msgpack=='undefined', 'static/js/msgpack.min.js');
+	js_alter(typeof RPCClient=='undefined', 'static/js/client.js');
+</script><script defer> 	
+	var ws = new WebSocket("ws://"+window.location.hostname+"/rpc")	
+	const stub = new RPCClient(ws);
+	var conf;
+	ws.onopen = async (e)=>{		
+		conf = await stub.rpc('config', ['servo']);
+		['head','left_arm','right_arm'].forEach(i=>{
+			q('input[name='+i+'_min]').value=conf[i].min_pulse
+			q('input[name='+i+'_max]').value=conf[i].max_pulse
+		})
+	}
+	async function cal_servo(name){
+		await stub.rpc('calibrate_servo',[conf[name].channel,parseFloat(q('input[name='+name+'_min]').value),parseFloat(q('input[name='+name+'_max]').value)])
+		await set_servo(name=='head'?'head':'lift')
+	}
+	async function set_servo(name){
+		var v=q('input[name='+name+']').value
+		q("#"+name+"_val").innerHTML=v+(name=='head'?"°":'');
+		await stub.rpc(name,[parseFloat(v)])
+		await sleep(0.5)
+		await stub.rpc(name,[null])
+	}
+</script>
+<h1>舵机调试</h1>
+<h2>头部&nbsp;&nbsp;&nbsp;&nbsp;<span id='head_val'>0°</span></h2>
+<div>-30°<input class='bottom' type='range' max="30" min='-30' value="0" step='5' name='head' oninput='set_servo("head")'>30°</div>
+<div><input class='left' type='number' size="1" name='head_min' onchange="cal_servo('head')"><input class='right' type='number' size="1" name='head_max' onchange="cal_servo('head')"></div><div><button class="right" onclick="cal_servo('head')">测试</button></div>
+<h2>手臂&nbsp;&nbsp;&nbsp;&nbsp;<span id='lift_val'>0</span></h2>
+0<input class='bottom' type='range' max="1" value="0" step='0.1' name='lift' oninput='set_servo("lift")'>1.0
+<h3>左臂</h3>
+<div><input class='left' type='number' size="1" name='left_arm_min' onchange="cal_servo('left_arm')"><input class='right' type='number' size="1" name='left_arm_max' onchange="cal_servo('left_arm')"></div><div><button class="right" onclick="cal_servo('left_arm')">测试</button></div>
+<h3>右臂</h3>
+<div><input class='left' type='number' size="1" name='right_arm_min' onchange="cal_servo('right_arm')"><input class='right' type='number' size="1" name='right_arm_max' onchange="cal_servo('right_arm')"></div><div><button class="right" onclick="cal_servo('right_arm')">测试</button></div>
+<div style="margin-top: 70px"><button onclick="stub.rpc('save_config',[])">保存</button></div>
+</body></html>

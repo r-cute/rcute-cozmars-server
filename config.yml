@@ -1,0 +1,36 @@
+button: 4
+buzzer: 21
+display:
+  cs: 7
+  dc: 6
+  rst: 5
+ir:
+  left: 16
+  right: 12
+motor:
+  left:
+  - 27
+  - 17
+  right:
+  - 24
+  - 23
+servo:
+  backlight:
+    channel: 15
+  freq: 60
+  head:
+    channel: 10
+    max_pulse: 1800
+    min_pulse: 1350
+  left_arm:
+    channel: 9
+    max_pulse: 1600
+    min_pulse: 2070
+  right_arm:
+    channel: 11
+    max_pulse: 920
+    min_pulse: 490
+  update_rate: 15
+sonar:
+  echo: 13
+  trigger: 26
