@@ -1,6 +1,6 @@
 button: 4
 buzzer: 21
-display:
+screen:
   cs: 7
   dc: 6
   rst: 5

@@ -26,6 +26,7 @@ class CozmarsServer:
         self.button.when_pressed = self.button.when_released = \
         self.sonar.when_in_range = self.sonar.when_out_of_range = \
             lambda: self.event_loop.call_soon_threadsafe(self.sensor_change_event.set)
+        return self
 
     async def __aexit__(self, exc_type, exc, tb):
         self.__del__()
@@ -57,13 +58,13 @@ class CozmarsServer:
         self._head = conf_servo(self.servokit, self.conf['servo']['head'])
         self._head.set_actuation_range(-30, 30)
 
-        self.display_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
-        self.display_backlight.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
+        self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
+        self.screen_backlight.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
         spi = board.SPI()
-        cs_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["display"]["cs"]}'))
-        dc_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["display"]["dc"]}'))
-        reset_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["display"]["rst"]}'))
-        self.display = st7789.ST7789(spi, rotation=90, width=135, height=240, x_offset=53, y_offset=40,
+        cs_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["cs"]}'))
+        dc_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["dc"]}'))
+        reset_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["rst"]}'))
+        self.screen = st7789.ST7789(spi, rotation=90, width=135, height=240, x_offset=53, y_offset=40,
             cs=cs_pin,
             dc=dc_pin,
             rst=reset_pin,
@@ -94,20 +95,34 @@ class CozmarsServer:
             self.lmotor.value = self.rmotor.value = args[0]
         elif ln == 2:
             self.lmotor.value, self.rmotor.value = args
+        elif ln == 0:
+            return self.lmotor.value, self.rmotor.value
 
     def stop_all_motors(self):
         self.speed(0)
         self.rarm.fraction = self.larm.fraction= self._head.angle = None
 
-    def backlight(self, fraction):
-        self.display_backlight.fraction = fraction
+    def backlight(self, *args):
+        if args:
+            self.screen_backlight.fraction = args[0]
+        else:
+            return self.screen_backlight.fraction
 
-    async def lift(self, height, duration=None, speed=None):
+    async def lift(self, *args):
+        if not args:
+            return self.rarm.fraction
+        height = args[0]
         if height == None:
             self.rarm.fraction = self.larm.fraction = None
             return
         if not 0<= height <= 1:
             raise ValueError('Height must be 0 to 1')
+        duration = speed = None
+        try:
+            duration = args[1]
+            speed = args[2]
+        except IndexError:
+            pass
         if not (speed or duration):
             self.rarm.fraction = height
             self.larm.fraction = height
@@ -127,12 +142,21 @@ class CozmarsServer:
                 self.larm.fraction += inc
                 self.rarm.fraction += inc
 
-    async def head(self, angle, duration=None, speed=None):
-        if angle==None:
-            self._head.angle=None
+    async def head(self, *args):
+        if not args:
+            return self._head.angle
+        angle = args[0]
+        if angle == None:
+            self._head.angle = None
             return
         if not -30 <= angle <= 30:
             raise ValueError('Angle must be -30 ~ 30')
+        duration = speed = None
+        try:
+            duration = args[1]
+            speed = args[2]
+        except IndexError:
+            pass
         if not (speed or duration):
             self._head.angle = angle
             return
@@ -151,23 +175,23 @@ class CozmarsServer:
                 self._head.angle += inc
 
     def image(self, image):
-        self.display.image(image)
+        self.screen.image(image)
 
     def fill(self, rgb):
-        self.display.fill(color565(rgb))
+        self.screen.fill(color565(rgb))
 
     def pixel(self, pos, rgb):
-        self.display.pixel(pos[0], pos[1], color565(rgb))
+        self.screen.pixel(pos[0], pos[1], color565(rgb))
 
     def gif(self, gif):
-        #https://github.com/adafruit/Adafruit_CircuitPython_RGB_Display/blob/master/examples/rgb_display_pillow_animated_gif.py
+        #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
         pass
 
     async def tone(self, *, request_stream):
         async for t in request_stream:
             self.buzzer.play(str(t)) if t else self.buzzer.stop()
 
-    async def sensor_data(self, *, request_stream):
+    async def sensor_data(self):
         self.sensor_change_event.clear()
         while True:
             done, pending = await asyncio.wait({request_stream.get(), self.sensor_change_event.wait()}, return_when=asyncio.FIRST_COMPLETED)
@@ -177,22 +201,40 @@ class CozmarsServer:
                 self.sensor_change_event.clear()
             yield self.lir.value, self.rir.value, self.button.value, self.sonar.distance
 
-    def distance_threshold(self, dist=None):
-        if dist:
-            self.sonar.threshold = dist
+    def double_press_max_interval(self, *args):
+        if args:
+            self._double_press_max_interval = args[0]
         else:
-            return self.sonar.threshold
+            return self._double_press_max_interval
 
-    def max_distance(self, dist=None):
-        if dist:
-            self.sonar.max_distance = dist
+    def hold_repeat(self, *args):
+        if args:
+            self.button.hold_repeat = args[0]
+        else:
+            return self.button.hold_repeat
+
+    def held_time(self, *args):
+        if args:
+            self.button.held_time = args[0]
+        else:
+            return self.button.held_time
+
+    def threshold_distance(self, *args):
+        if args:
+            self.sonar.threshold_distance = args[0]
+        else:
+            return self.sonar.threshold_distance
+
+    def max_distance(self, *args):
+        if args:
+            self.sonar.max_distance = args[0]
         else:
             return self.sonar.max_distance
 
-    def rec_vol(self, vol=None):
-        if vol:
-            if 0 <= vol <= 100:
-                check_output(f'amixer set Boost {vol}%'.split(' '))
+    def rec_vol(self, *args):
+        if args:
+            if 0 <= args[0] <= 100:
+                check_output(f'amixer set Boost {args[0]}%'.split(' '))
             else:
                 raise ValueError('volumn must be 0 ~ 100')
         else:
