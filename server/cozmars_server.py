@@ -21,11 +21,17 @@ class CozmarsServer:
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
         self.sonar = DistanceSensor(trigger=self.conf['sonar']['trigger'], echo=self.conf['sonar']['echo'], queue_len=5)
 
-        self.lir.when_line = self.lir.when_no_line = \
-        self.rir.when_line = self.rir.when_no_line = \
-        self.button.when_pressed = self.button.when_released = \
-        self.sonar.when_in_range = self.sonar.when_out_of_range = \
-            lambda: self.event_loop.call_soon_threadsafe(self.sensor_change_event.set)
+        self._sensor_event_queue = asyncio.Queue()
+        def cb(ev, obj, attr):
+            return lambda: self.event_loop.call_soon_threadsafe(self._sensor_event_queue.put_nowait, (ev, getattr(obj, attr)))
+
+        self.lir.when_line = self.lir.when_no_line = cb('lir', self.lir, 'value')
+        self.rir.when_line = self.rir.when_no_line = cb('rir', self.rir, 'value')
+        self.button.when_pressed = self.button.when_released = cb('pressed', self.button, 'is_pressed')
+        self.button.when_held = cb('held', self.button, 'is_held')
+        self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
+        self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
+
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -36,14 +42,13 @@ class CozmarsServer:
 
     def __del__(self):
         self.stop_all_motors()
-        self.backlight(0)
+        self.screen_backlight.fraction = None
 
     def __init__(self, config_path='../config.yml'):
         with open(config_path) as f:
             self.conf = yaml.safe_load(f)
 
         self.lock = asyncio.Lock()
-        self.sensor_change_event = asyncio.Event()
         self.event_loop = asyncio.get_running_loop()
 
         self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
@@ -101,14 +106,33 @@ class CozmarsServer:
             self.lmotor.value = self.rmotor.value = 0
 
     def stop_all_motors(self):
-        self.speed(0)
+        self.lmotor.value = self.rmotor.value = 0
         self.rarm.fraction = self.larm.fraction= self._head.angle = None
 
-    def backlight(self, *args):
-        if args:
-            self.screen_backlight.fraction = args[0]
-        else:
-            return self.screen_backlight.fraction
+    async def backlight(self, *args):
+        if not args:
+            return self.screen_backlight.fraction or 0
+        value = args[0]
+        duration = speed = None
+        try:
+            duration = args[1]
+            speed = args[2]
+        except IndexError:
+            pass
+        if not (duration or speed):
+            self.screen_backlight.fraction = value or 0
+            return
+        elif speed:
+            if not 0 < speed <= 1 * self.servo_update_rate:
+                raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
+            duration = (value - self.screen_backlight.fraction)/speed
+        steps = int(duration * self.servo_update_rate)
+        interval = 1/self.servo_update_rate
+        inc = (value-self.screen_backlight.fraction)/steps
+        for _ in range(steps):
+            await asyncio.sleep(interval)
+            self.screen_backlight.fraction += inc
+
 
     async def lift(self, *args):
         if not args:
@@ -129,11 +153,9 @@ class CozmarsServer:
             self.rarm.fraction = height
             self.larm.fraction = height
             return
-        if speed and duration:
-            raise Exception('cannot set both speed and duration')
         elif speed:
-            if not 0 < speed <= 1 / self.servo_update_rate:
-                raise ValueError(f'Speed must be 0 ~ {self.servo_update_rate}')
+            if not 0 < speed <= 1 * self.servo_update_rate:
+                raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
             duration = (height - self.larm.fraction)/speed
         if duration and self.larm.fraction:
             steps = int(duration * self.servo_update_rate)
@@ -162,11 +184,9 @@ class CozmarsServer:
         if not (speed or duration):
             self._head.angle = angle
             return
-        elif speed and duration:
-            raise Exception('cannot set both speed and duration')
         elif speed:
-            if not 0 < speed <= 60 / self.servo_update_rate:
-                raise ValueError(f'Speed must be 0 ~ {60/self.servo_update_rate}')
+            if not 0 < speed <= 60 * self.servo_update_rate:
+                raise ValueError(f'Speed must be 0 ~ {60*self.servo_update_rate}')
             duration = (angle - self._head.angle)/speed
         if duration and self._head.angle:
             steps = duration*self.servo_update_rate
@@ -200,14 +220,10 @@ class CozmarsServer:
             self.buzzer.stop()
 
     async def sensor_data(self):
-        self.sensor_change_event.clear()
         while True:
-            done, pending = await asyncio.wait({request_stream.get(), self.sensor_change_event.wait()}, return_when=asyncio.FIRST_COMPLETED)
-            for p in pending:
-                p.cancel()
-            if self.sensor_change_event.is_set():
-                self.sensor_change_event.clear()
-            yield self.lir.value, self.rir.value, self.button.value, self.sonar.distance
+            d=await self._sensor_event_queue.get()
+            print(d)
+            yield d
 
     def double_press_max_interval(self, *args):
         if args:
@@ -239,7 +255,10 @@ class CozmarsServer:
         else:
             return self.sonar.max_distance
 
-    def mic_volumn(self, *args):
+    def distance(self):
+        return self.sonar.distance
+
+    def microphone_volumn(self, *args):
         if args:
             if 0 <= args[0] <= 100:
                 check_output(f'amixer set Boost {args[0]}%'.split(' '))
@@ -250,7 +269,7 @@ class CozmarsServer:
             return int(a[a.index(b'[') + 1 : a.index(b'%')])
 
 
-    async def cam(self, width, height, framerate):
+    async def camera(self, width, height, framerate):
         import picamera, io, threading, time
         try:
             queue = asyncio.Queue(1)
@@ -282,7 +301,7 @@ class CozmarsServer:
             stop_ev.set()
             await bg_task
 
-    async def mic(self, samplerate=16000):
+    async def microphone(self, samplerate=16000):
         import sounddevice as sd
         dtype = 'int16'
         blocksize_sec = .1

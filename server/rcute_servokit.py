@@ -65,7 +65,7 @@ class Servo:
         For conventional servos, corresponds to the servo position as a fraction
         of the actuation range. Is None when servo is diabled (pulsewidth of 0ms).
         """
-        if self._pwm_out.duty_cycle == 0:  # Special case for disabled servos
+        if self._pwm_out.duty_cycle == 0 and self._min_duty != 0:  # Special case for disabled servos
             return None
         return (self._pwm_out.duty_cycle - self._min_duty) / self._duty_range
 
