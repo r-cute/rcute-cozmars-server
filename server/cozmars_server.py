@@ -89,14 +89,16 @@ class CozmarsServer:
             return conf[name[0]] if len(name)==1 else get_conf(conf[name[0]], name[1:])
         return get_conf(self.conf, name.split('.'))
 
-    def speed(self, *args):
-        ln = len(args)
-        if ln == 1:
-            self.lmotor.value = self.rmotor.value = args[0]
-        elif ln == 2:
-            self.lmotor.value, self.rmotor.value = args
-        elif ln == 0:
+    async def speed(self, speed=None, duration=None):
+        if not speed:
             return self.lmotor.value, self.rmotor.value
+        try:
+            self.lmotor.value, self.rmotor.value = speed
+        except TypeError:
+            self.lmotor.value = self.rmotor.value = speed
+        if duration:
+            await asyncio.sleep(duration)
+            self.lmotor.value = self.rmotor.value = 0
 
     def stop_all_motors(self):
         self.speed(0)
@@ -187,9 +189,15 @@ class CozmarsServer:
         #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
         pass
 
-    async def tone(self, *, request_stream):
-        async for t in request_stream:
-            self.buzzer.play(str(t)) if t else self.buzzer.stop()
+    async def play(self, *, request_stream):
+        async for note in request_stream:
+            self.buzzer.play(str(note)) if t else self.buzzer.stop()
+
+    async def tone(self, note, duration=None):
+        self.buzzer.play(str(note))
+        if duration:
+            await asyncio.sleep(duration)
+            self.buzzer.stop()
 
     async def sensor_data(self):
         self.sensor_change_event.clear()
@@ -231,7 +239,7 @@ class CozmarsServer:
         else:
             return self.sonar.max_distance
 
-    def rec_vol(self, *args):
+    def mic_volumn(self, *args):
         if args:
             if 0 <= args[0] <= 100:
                 check_output(f'amixer set Boost {args[0]}%'.split(' '))
