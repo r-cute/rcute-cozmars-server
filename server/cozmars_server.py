@@ -36,12 +36,12 @@ class CozmarsServer:
 
     async def __aexit__(self, exc_type, exc, tb):
         self.__del__()
-        for a in [self.sonar, self.lir, self.rir, self.button, self.buzzer, self.lmotor, self.rmotor]:
-            a.close()
         self.lock.release()
 
     def __del__(self):
         self.stop_all_motors()
+        for a in [self.sonar, self.lir, self.rir, self.button, self.buzzer, self.lmotor, self.rmotor]:
+            a.close()
         self.screen_backlight.fraction = None
 
     def __init__(self, config_path='../config.yml'):
@@ -211,10 +211,10 @@ class CozmarsServer:
 
     async def play(self, *, request_stream):
         async for note in request_stream:
-            self.buzzer.play(str(note)) if t else self.buzzer.stop()
+            self.buzzer.play(str(note)) if note else self.buzzer.stop()
 
     async def tone(self, note, duration=None):
-        self.buzzer.play(str(note))
+        self.buzzer.play(str(note)) if note else self.buzzer.stop()
         if duration:
             await asyncio.sleep(duration)
             self.buzzer.stop()
