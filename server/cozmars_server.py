@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, time
 from gpiozero import Motor, Button, TonalBuzzer, DistanceSensor, LineSensor
 from rcute_servokit import ServoKit
 
@@ -9,6 +9,7 @@ from adafruit_rgb_display.rgb import color565
 
 from subprocess import check_call, check_output
 import yaml
+import numpy as np
 
 class CozmarsServer:
     async def __aenter__(self):
@@ -21,13 +22,23 @@ class CozmarsServer:
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
         self.sonar = DistanceSensor(trigger=self.conf['sonar']['trigger'], echo=self.conf['sonar']['echo'], queue_len=5)
 
-        self._sensor_event_queue = asyncio.Queue()
+        self._sensor_event_queue = None
+        self._button_last_press_time = 0
         def cb(ev, obj, attr):
-            return lambda: self.event_loop.call_soon_threadsafe(self._sensor_event_queue.put_nowait, (ev, getattr(obj, attr)))
-
+            return lambda: self._sensor_event_queue and self.event_loop.call_soon_threadsafe(self._sensor_event_queue.put_nowait, (ev, getattr(obj, attr)))
+        def button_press_cb():
+            if self._sensor_event_queue:
+                now = time.time()
+                if now - self._button_last_press_time <= self._double_press_max_interval:
+                    ev = 'double_pressed'
+                else:
+                    ev = 'pressed'
+                self.event_loop.call_soon_threadsafe(self._sensor_event_queue.put_nowait, (ev, True))
+                self._button_last_press_time = now
         self.lir.when_line = self.lir.when_no_line = cb('lir', self.lir, 'value')
         self.rir.when_line = self.rir.when_no_line = cb('rir', self.rir, 'value')
-        self.button.when_pressed = self.button.when_released = cb('pressed', self.button, 'is_pressed')
+        self.button.when_pressed = button_press_cb
+        self.button.when_released = cb('pressed', self.button, 'is_pressed')
         self.button.when_held = cb('held', self.button, 'is_held')
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
@@ -76,6 +87,7 @@ class CozmarsServer:
             baudrate=24000000,
         )
         self.servo_update_rate = self.conf['servo']['update_rate']
+        self._double_press_max_interval = .5
 
     def save_config(self, config_path='../config.yml'):
         with open(config_path, 'w') as f:
@@ -197,7 +209,7 @@ class CozmarsServer:
                 self._head.angle += inc
 
     def image(self, image):
-        self.screen.image(image)
+        self.screen.image(np.frombuffer(image))
 
     def fill(self, rgb):
         self.screen.fill(color565(rgb))
@@ -220,10 +232,13 @@ class CozmarsServer:
             self.buzzer.stop()
 
     async def sensor_data(self):
-        while True:
-            d=await self._sensor_event_queue.get()
-            print(d)
-            yield d
+        try:
+            self._sensor_event_queue = asyncio.Queue()
+            while True:
+                yield await self._sensor_event_queue.get()
+        except Exception as e:
+            self._sensor_event_queue = None
+            raise e
 
     def double_press_max_interval(self, *args):
         if args:
