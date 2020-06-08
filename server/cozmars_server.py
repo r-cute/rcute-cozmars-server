@@ -208,14 +208,14 @@ class CozmarsServer:
                 await asyncio.sleep(interval)
                 self._head.angle += inc
 
-    def image(self, image):
-        self.screen.image(np.frombuffer(image))
+    def display(self, image_data, x, y, x1, y1):
+        self.screen._block(x, y, x1, y1, image_data)
 
-    def fill(self, rgb):
-        self.screen.fill(color565(rgb))
+    def fill(self, color565, x, y, w, h):
+        self.screen.fill_rectangle(x, y, w, h, color565)
 
-    def pixel(self, pos, rgb):
-        self.screen.pixel(pos[0], pos[1], color565(rgb))
+    def pixel(self, x, y, color565):
+        return self.screen.pixel(x, y, color565)
 
     def gif(self, gif):
         #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
