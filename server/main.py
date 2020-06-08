@@ -43,7 +43,7 @@ def ip(request):
 
 @app.route('/version')
 def version(request):
-    return cozmars_server.__version__
+    return sanic.response.text('1.0')
 
 @app.route('/upgrade')
 def upgrade(request):

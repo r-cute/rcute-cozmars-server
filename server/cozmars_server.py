@@ -9,7 +9,6 @@ from adafruit_rgb_display.rgb import color565
 
 from subprocess import check_call, check_output
 import yaml
-import numpy as np
 
 class CozmarsServer:
     async def __aenter__(self):
@@ -42,6 +41,7 @@ class CozmarsServer:
         self.button.when_held = cb('held', self.button, 'is_held')
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
+        self.screen_backlight.fraction = .1
 
         return self
 
@@ -217,9 +217,9 @@ class CozmarsServer:
     def pixel(self, x, y, color565):
         return self.screen.pixel(x, y, color565)
 
-    def gif(self, gif):
+    def gif(self, gif, loop):
         #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
-        pass
+        raise NotImplemented
 
     async def play(self, *, request_stream):
         async for note in request_stream:
