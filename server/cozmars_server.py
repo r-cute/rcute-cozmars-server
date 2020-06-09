@@ -316,13 +316,13 @@ class CozmarsServer:
             stop_ev.set()
             await bg_task
 
-    async def microphone(self, samplerate=16000):
+    async def microphone(self, samplerate=16000, dtype='int16'):
         import sounddevice as sd
-        dtype = 'int16'
         blocksize_sec = .1
-        bytes_per_sample = 2
         channels = 1
-        blocksize = int(blocksize_sec * bytes_per_sample * channels * samplerate)
+        # bytes_per_sample = dtype[-2:]//8
+        # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
+        blocksize = int(blocksize_sec * channels * samplerate)
         loop = asyncio.get_running_loop()
         queue = asyncio.Queue(5)
         def cb(indata, frames, time, status):
