@@ -10,6 +10,8 @@ from adafruit_rgb_display.rgb import color565
 from subprocess import check_call, check_output
 import yaml
 
+from wsmprpc import RPCStream
+
 class CozmarsServer:
     async def __aenter__(self):
         await self.lock.acquire()
@@ -41,6 +43,7 @@ class CozmarsServer:
         self.button.when_held = cb('held', self.button, 'is_held')
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
+        self.screen.fill(0)
         self.screen_backlight.fraction = .1
 
         return self
@@ -76,6 +79,7 @@ class CozmarsServer:
 
         self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
         self.screen_backlight.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
+        self.screen_backlight.fraction = 0
         spi = board.SPI()
         cs_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["cs"]}'))
         dc_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["dc"]}'))
@@ -231,11 +235,19 @@ class CozmarsServer:
             await asyncio.sleep(duration)
             self.buzzer.stop()
 
-    async def sensor_data(self):
+    async def sensor_data(self, update_rate=None):
+        timeout = 1/update_rate if update_rate else None
         try:
+            # if the below queue has a max size, it'd better be a `RPCStream` instead of `asyncio.Queue`,
+            # and call `force_put_nowait` instead of `put_nowait` in `loop.call_soon_threadsafe`,
+            # otherwise if the queue if full,
+            # an `asyncio.QueueFull` exception will be raised inside the main loop!
             self._sensor_event_queue = asyncio.Queue()
             while True:
-                yield await self._sensor_event_queue.get()
+                try:
+                    yield await asyncio.wait_for(self._sensor_event_queue.get(), timeout)
+                except asyncio.TimeoutError:
+                    yield 'sonar', self.sonar.distance
         except Exception as e:
             self._sensor_event_queue = None
             raise e
@@ -287,7 +299,7 @@ class CozmarsServer:
     async def camera(self, width, height, framerate):
         import picamera, io, threading, time
         try:
-            queue = asyncio.Queue(1)
+            queue = RPCStream(2)
             stop_ev = threading.Event()
 
             def bg_run(loop):
@@ -297,13 +309,14 @@ class CozmarsServer:
                     time.sleep(2)
                     stream = io.BytesIO()
                     for _ in cam.capture_continuous(stream, 'jpeg', use_video_port=True):
+                        if stop_ev.isSet():
+                            break
                         stream.seek(0)
-                        loop.call_soon_threadsafe(queue.put_nowait, stream.read())
+                        loop.call_soon_threadsafe(queue.force_put_nowait, stream.read())
                         # queue.put_nowait(stream.read())
                         stream.seek(0)
                         stream.truncate()
-                        if stop_ev.isSet():
-                            break
+
 
             loop = asyncio.get_running_loop()
             # threading.Thread(target=bg_run, args=[loop]).start()
@@ -324,13 +337,13 @@ class CozmarsServer:
         # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
         blocksize = int(blocksize_sec * channels * samplerate)
         loop = asyncio.get_running_loop()
-        queue = asyncio.Queue(5)
+        queue = RPCStream(5)
         def cb(indata, frames, time, status):
             nonlocal queue, loop
             if status:
                 print(status, file=sys.stderr)
                 raise sd.CallbackAbort
-            loop.call_soon_threadsafe(queue.put_nowait, bytes(indata))
+            loop.call_soon_threadsafe(queue.force_put_nowait, bytes(indata))
 
         with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=blocksize, channels=channels, dtype=dtype):
             while True:
