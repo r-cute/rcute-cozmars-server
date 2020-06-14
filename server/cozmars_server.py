@@ -144,10 +144,15 @@ class CozmarsServer:
             duration = (value - self.screen_backlight.fraction)/speed
         steps = int(duration * self.servo_update_rate)
         interval = 1/self.servo_update_rate
-        inc = (value-self.screen_backlight.fraction)/steps
-        for _ in range(steps):
-            await asyncio.sleep(interval)
-            self.screen_backlight.fraction += inc
+        try:
+            inc = (value-self.screen_backlight.fraction)/steps
+            for _ in range(steps):
+                await asyncio.sleep(interval)
+                self.screen_backlight.fraction += inc
+        except (ZeroDivisionError, ValueError):
+            pass
+        finally:
+            self.screen_backlight.fraction = value
 
 
     async def lift(self, *args):
@@ -155,7 +160,7 @@ class CozmarsServer:
             return self.rarm.fraction
         height = args[0]
         if height == None:
-            self.rarm.fraction = self.larm.fraction = None
+            self.rarm.fraction = self.larm.fraction = height
             return
         if not 0<= height <= 1:
             raise ValueError('Height must be 0 to 1')
@@ -165,22 +170,29 @@ class CozmarsServer:
             speed = args[2]
         except IndexError:
             pass
-        if not (speed or duration):
+        if not (self.rarm.fraction!=None and (speed or duration)):
             self.rarm.fraction = height
             self.larm.fraction = height
             return
         elif speed:
             if not 0 < speed <= 1 * self.servo_update_rate:
                 raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
-            duration = (height - self.larm.fraction)/speed
-        if duration and self.larm.fraction:
-            steps = int(duration * self.servo_update_rate)
-            interval = 1/self.servo_update_rate
+            duration = abs(height - self.larm.fraction)/speed
+        if duration == 0:
+            return
+        steps = int(duration * self.servo_update_rate)
+        interval = 1/self.servo_update_rate
+        try:
             inc = (height-self.larm.fraction)/steps
             for _ in range(steps):
                 await asyncio.sleep(interval)
                 self.larm.fraction += inc
                 self.rarm.fraction += inc
+        except (ZeroDivisionError, ValueError):
+            pass
+        finally:
+            self.rarm.fraction = height
+            self.larm.fraction = height
 
     async def head(self, *args):
         if not args:
@@ -197,20 +209,24 @@ class CozmarsServer:
             speed = args[2]
         except IndexError:
             pass
-        if not (speed or duration):
+        if not (self._head.angle!=None and (speed or duration)):
             self._head.angle = angle
             return
         elif speed:
             if not 0 < speed <= 60 * self.servo_update_rate:
                 raise ValueError(f'Speed must be 0 ~ {60*self.servo_update_rate}')
-            duration = (angle - self._head.angle)/speed
-        if duration and self._head.angle:
-            steps = duration*self.servo_update_rate
-            interval = 1/self.servo_update_rate
-            inc = (angle-self.larm.fraction)/steps
+            duration = abs(angle - self._head.angle)/speed
+        steps = int(duration*self.servo_update_rate)
+        interval = 1/self.servo_update_rate
+        try:
+            inc = (angle-self._head.angle)/steps
             for _ in range(steps):
                 await asyncio.sleep(interval)
                 self._head.angle += inc
+        except (ZeroDivisionError, ValueError):
+            pass
+        finally:
+            self._head.angle = angle
 
     def display(self, image_data, x, y, x1, y1):
         self.screen._block(x, y, x1, y1, image_data)
