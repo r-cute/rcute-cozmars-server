@@ -40,6 +40,7 @@ class Cozmars {
 		const that = this;
 		return new Promise((r,j)=>{
 			const ws = new WebSocket('ws://'+that.host+'/rpc');
+			this.ws = ws;
 			ws.onopen = (e)=>{
 				that._stub = new RPCClient(ws);
 				that._startSensorTask();
@@ -48,7 +49,6 @@ class Cozmars {
 			}
 			ws.onclose = (e)=>{console.debug('cozmars ws closed'); that.disconnect();} 
 			ws.onerror = (e)=>{console.error('cozmars ws error:', e); j();}
-			this.ws = ws;
 		})
 	}
 	disconnect(){
@@ -97,7 +97,7 @@ class Cozmars {
 					}
 				}
 			})();
-		})
+		});
 	}
 }
 class Component {

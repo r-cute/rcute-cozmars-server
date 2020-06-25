@@ -1,0 +1,59 @@
+<html><head>
+<!-- <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">      -->
+<meta content="yes" name="apple-mobile-web-app-capable">     
+<meta content="black" name="apple-mobile-web-app-status-bar-style">  
+<title>Cozmars</title></head><body onresize="onresize()">
+	<canvas id='cam' width="480" height="360"></canvas>
+	<input type='range' orient='vertical' class="bottom" value='0' step="10" min='-30' max='30'>
+	<input type='range' orient='vertical' class="top" value='0' step="0.1" min='0' max='1'>
+	<style>
+		body{position:fixed;height:100%;border:0;margin:0;padding:0;-webkit-overflow-scrolling：none;}
+		#cam{border: 1px dashed gray;
+			position: absolute;
+			left:0;top:0;right:0;bottom:0;margin: auto;}
+		input[type=range][orient=vertical]{
+			position: absolute;
+			height:40%;
+			margin:2% 0;
+			writing-mode: bt-lr; /* IE */
+		    -webkit-appearance: slider-vertical; /* WebKit */
+		    padding:0;
+		}
+		.top{top:0;}
+		.bottom{bottom:0;}
+		* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+	</style>
+	<script src='static/virtualjoystick.js'></script>
+	<script src='static/msgpack.min.js'></script>
+	<script src='static/cozmars.js'></script>
+	<script>	
+	var joy = new VirtualJoystick({
+		mouseSupport	: true,
+		limitStickTravel: true,
+		stickRadius	: 100,
+		stationaryBase: true,
+		baseX: (window.innerWidth-480)/4,
+		baseY: window.innerHeight*0.5
+	});
+	joy.addEventListener('mouseStartValidation', e=>e.clientX < window.innerWidth/2);
+	joy.addEventListener('touchStartValidation', e=>e.changedTouches[0].pageX < window.innerWidth/2);
+	// var cozmars = new Cozmars(location.host);
+	// cozmars.connect().catch((e)=>{console.error(e)});
+	// joy._baseEl.className='unselectable';
+	function onresize(){
+		document.querySelectorAll('input').forEach((e)=>{e.style.right=(window.innerWidth-480-e.offsetWidth)/4+'px'});		
+		joy._baseEl.style.left	= ((window.innerWidth-480)/4 - joy._baseEl.width /2)+"px";
+		joy._baseEl.style.top	= (window.innerHeight*0.5 - joy._baseEl.height/2)+"px";
+	};	
+	onresize();
+	// window.addEventListener('orientationchange', onresize, false);
+	</script>
+	
+</body></html>

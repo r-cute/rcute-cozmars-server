@@ -13,7 +13,7 @@ async def before_server_start(request, loop):
 
 app.static('/static', './static/')
 app.static('/servo', './static/servo.html', content_type="text/html; charset=utf-8")
-app.static('/about', './static/about.html', content_type="text/html; charset=utf-8")
+app.static('/test', './static/test.html', content_type="text/html; charset=utf-8")
 app.static('/', './static/index.html', content_type="text/html; charset=utf-8")
 
 @app.websocket('/rpc')
@@ -31,19 +31,53 @@ def reboot(request):
     from subprocess import check_call
     check_call(['sudo', 'reboot'])
 
+def _mac():
+    import uuid
+    return hex(uuid.getnode())[2:]
+
 @app.route('/serial')
 def serial(request):
-    import uuid
-    return sanic.response.text(hex(uuid.getnode())[-4:])
+    return sanic.response.text(_serial()[-4:])
+
+def _ip():
+    import socket
+    return socket.gethostbyname(f'{socket.gethostname()}.local')
 
 @app.route('/ip')
 def ip(request):
     import socket
-    return sanic.response.text(socket.gethostbyname(f'{socket.gethostname()}.local'))
+    return sanic.response.text(_ip())
+
+def _version():
+    return '1.0'
 
 @app.route('/version')
 def version(request):
-    return sanic.response.text('1.0')
+    return sanic.response.text(_version())
+
+@app.route('/wifi')
+def wifi(request):
+    from subprocess import check_output
+    s = check_output("sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant-wlan0.conf".split(' ')).decode()
+    ssid, pw = [a[a.find('"')+1:-1] for a in s.split('\n')[:2]]
+    with open('./static/wifi.tmpl') as file:
+        return sanic.response.html(file.read().format(ssid=ssid, pw=pw))
+
+@app.route('/save_wifi', methods=['POST', 'GET'])
+def save_wifi(request):
+    from subprocess import check_call
+    try:
+        ssid, pw = [(request.form or request.args)[a][0] for a in ['ssid', 'pass']]
+        check_call(f'sudo sh save_wifi.sh {ssid} {pw}'.split(' '))
+        return sanic.response.html("<p style='color:green'>wifi设置已保存，<form action='reboot'><input type='submit' value='重启cozmars'></form></p>")
+    except Exception as e:
+        return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
+
+@app.route('/about')
+def about(request):
+    with open('./static/about.tmpl') as file:
+        mac = _mac()
+        return sanic.response.html(file.read().format(version=_version(),mac=':'.join([mac[i:i+2] for i in range(0,12,2)]),serial=mac[-4:],ip=_ip()))
 
 @app.route('/upgrade')
 def upgrade(request):

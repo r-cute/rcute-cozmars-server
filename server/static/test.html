@@ -1,0 +1,28 @@
+<html><head><title>Cozmars</title></head><body>
+<script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script>
+<script>
+function js_alter(b, src){if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}function q(d){return document.querySelector(d)}function sleep(sec){return new Promise((r,j)=>{setTimeout(r,sec*1000)})}
+js_alter(typeof msgpack=='undefined', 'static/msgpack.min.js');
+js_alter(typeof RPCClient=='undefined', 'static/wsmprpc.client.js');
+js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
+</script>
+<h1>测试</h1><p style='border:1px dashed gray'>该页面用于测试 Cozmars 软硬件是否正常，测试前应先关闭其它正在连接 Cozmars 的 Python 程序或 Scratch 网页</p>
+<h3>传感器数据</h3>
+<table><tr><td>按钮</td><td id='button'></td></tr><tr><td>距离</td><td id='sonar'></td></tr><tr><td>红外</td><td id='ir'></td></tr></table>
+<h3>舵机测试</h3><button onclick='robot.head.angle(30)'>抬头</button><button onclick='robot.head.angle(-30)'>低头</button><button onclick='robot.lift.height(1)'>举起</button><button onclick='robot.lift.height(0)'>放下</button>
+<h3>马达测试</h3><button onclick='robot.motor.speed([-1,1],2)'>左转</button><button onclick='robot.motor.speed([1,-1],2)'>右转</button>
+<script defer>
+const button=document.getElementById('button');
+const sonar=document.getElementById('sonar');
+const ir=document.getElementById('ir');
+const robot=new Cozmars(ip=location.host);
+robot.connect().catch(console.error);
+setInterval(function(){
+	ir.innerText=robot.infrared.state;
+	button.innerText=robot.button.doublePressed?"double pressed":(robot.button.held?"held":(robot.button.pressed?"pressed":'released'));
+	sonar.innerText=robot.sonar.distance;
+},300);
+</script>
+</body></html>

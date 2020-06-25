@@ -1,0 +1,16 @@
+<html><head><title>Cozmars</title></head><body>
+<h1>wifi 设置</h1>
+<p style='border:1px dashed gray'>设置您家里或办公室的 wifi，重启后 Cozmars 会自动连接该 wifi<br>在首次使用或环境 wifi 无法连接时，可以搜索 Cozmars 自带的 wifi 热点 Cozmars-xxxx（后四位是序列号，密码为 rcute-cozmars）<br>连接后登陆 <a href='http://10.3.141.1/wifi'>http://10.3.141.1/wifi</a> 进行设置</p>
+<form action='save_wifi' method='post'>
+    wifi 名称 <input type='text' name='ssid' value='{ssid}'><br>
+    wifi 密码 <input id='pass' type='password' name='pass' value='{pw}'>
+    <a href='#' onclick='showhide()'>显示</a><br>
+    <input type='submit' value='保存'>
+</form><script>
+    function showhide(){{
+        var a=document.querySelector('a');
+        var p=document.querySelector('#pass');
+        if(a.innerText=='显示'){{p.type='text';a.innerText='隐藏';}}
+        else{{p.type='password';a.innerText='显示';}}
+    }}
+</script></body></html>

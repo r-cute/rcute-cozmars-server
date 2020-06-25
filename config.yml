@@ -1,9 +1,5 @@
 button: 4
 buzzer: 21
-screen:
-  cs: 7
-  dc: 6
-  rst: 5
 ir:
   left: 16
   right: 12
@@ -14,6 +10,10 @@ motor:
   right:
   - 24
   - 23
+screen:
+  cs: 7
+  dc: 6
+  rst: 5
 servo:
   backlight:
     channel: 15
