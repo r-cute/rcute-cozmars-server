@@ -1,0 +1,12 @@
+[Unit]
+After=network.target
+Description=Cozmars Sanic server
+
+[Service]
+User=root
+WorkingDirectory=/home/pi/rcute-cozmars-server/rcute_cozmars_server
+ExecStart=/usr/bin/env python3 __main__.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
