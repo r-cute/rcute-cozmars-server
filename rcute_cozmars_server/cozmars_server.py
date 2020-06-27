@@ -58,7 +58,7 @@ class CozmarsServer:
             a.close()
         self.screen_backlight.fraction = None
 
-    def __init__(self, config_path='../config.yml'):
+    def __init__(self, config_path='/home/pi/.cozmars.cfg'):
         with open(config_path) as f:
             self.conf = yaml.safe_load(f)
 
@@ -93,7 +93,7 @@ class CozmarsServer:
         self.servo_update_rate = self.conf['servo']['update_rate']
         self._double_press_max_interval = .5
 
-    def save_config(self, config_path='../config.yml'):
+    def save_config(self, config_path='/home/pi/.cozmars.cfg'):
         with open(config_path, 'w') as f:
             yaml.safe_dump(self.conf, f, indent=2)
 

@@ -1,3 +1,7 @@
 */wsmprpc/
 */__pycache__/
+build/
+dist/
+*.egg-info/
+.Trash-1000/
 *.py[cod]

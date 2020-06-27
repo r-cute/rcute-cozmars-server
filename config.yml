@@ -1,3 +1,5 @@
+# this is only a template file, 
+# the real file should be placed under /home/pi named .cozmars.cfg
 button: 4
 buzzer: 21
 ir:

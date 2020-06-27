@@ -4,6 +4,9 @@ import sanic
 from wsmprpc import RPCServer
 from cozmars_server import CozmarsServer
 
+# https://stackoverflow.com/questions/6028000/how-to-read-a-static-file-from-inside-a-python-package#
+# import pkgutil
+
 app = sanic.Sanic(__name__)
 
 @app.listener("before_server_start")
@@ -49,7 +52,7 @@ def ip(request):
     return sanic.response.text(_ip())
 
 def _version():
-    return '1.0'
+    return '1.0.1'
 
 @app.route('/version')
 def version(request):
@@ -58,8 +61,9 @@ def version(request):
 @app.route('/wifi')
 def wifi(request):
     from subprocess import check_output
-    s = check_output("sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant-wlan0.conf".split(' ')).decode()
+    s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant-wlan0.conf".split(' ')).decode()
     ssid, pw = [a[a.find('"')+1:-1] for a in s.split('\n')[:2]]
+    # return sanic.response.html(pkgutil.get_data(__name__, 'static/wifi.tmpl').decode().format(ssid=ssid, pw=pw))
     with open('./static/wifi.tmpl') as file:
         return sanic.response.html(file.read().format(ssid=ssid, pw=pw))
 
@@ -75,8 +79,9 @@ def save_wifi(request):
 
 @app.route('/about')
 def about(request):
+    mac = _mac()
+    # return sanic.response.html(pkgutil.get_data(__name__, 'static/about.tmpl').decode().format(version=_version(),mac=':'.join([mac[i:i+2] for i in range(0,12,2)]),serial=mac[-4:],ip=_ip()))
     with open('./static/about.tmpl') as file:
-        mac = _mac()
         return sanic.response.html(file.read().format(version=_version(),mac=':'.join([mac[i:i+2] for i in range(0,12,2)]),serial=mac[-4:],ip=_ip()))
 
 @app.route('/upgrade')
@@ -97,6 +102,6 @@ def upgrade(request):
                             write(proc.stderr, '<span style="color:red">%s</span><br>')])
     return sanic.response.stream(streaming_fn, content_type='text/html')
 
-
+# if __name__ == "__main__":
 app.run(host="0.0.0.0", port=80, debug=False)
 # app.run(host="0.0.0.0", port=80)
