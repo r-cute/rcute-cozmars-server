@@ -129,7 +129,7 @@ class RPCClient{
 	                        break;
 
 	                    case RPCClient.RESPONSE_STREAM_CHUNCK:
-	                        p.response_stream.put_nowait(msg[2]);
+	                        p.response_stream.put_nowait(msg[2], true);
 	                        break;
 
 	                    case RPCClient.RESPONSE_STREAM_END:

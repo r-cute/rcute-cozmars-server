@@ -1,19 +1,26 @@
 import setuptools
+import os
 
-with open("./README.md", 'r') as f:
-    long_description = f.read()
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, 'rcute_cozmars_server', 'version.py')) as f:
+    ns = {}
+    exec(f.read(), ns)
+    version = ns['__version__']
+
+description=f"R-Cute 教育机器人 Cozmars 固件，最新版本 {version}"
 
 with open('./requirements.txt', 'r') as f:
     requirements = [a.strip() for a in f]
 
 setuptools.setup(
     name="rcute-cozmars-server",
-    version="1.0.1",
+    version=version,
     author="Huang Yan",
     author_email="hyansuper@foxmail.com",
-    description="Firmware for Cozmars, the 3d printable educational robot.",
-    license="MIT",
-    long_description=long_description,
+    #license="MIT",
+    description=description,
+    long_description=f"#rcute-cozmars-server\n\n{description}",
     long_description_content_type="text/markdown",
     url="https://github.com/hyansuper/rcute-cozmars-server",
     packages=['rcute_cozmars_server'],

@@ -1,0 +1,19 @@
+from os import path
+
+PKG = path.dirname(__file__)
+STATIC = path.join(PKG, 'static')
+
+def static(file_name):
+    return path.join(STATIC, file_name)
+
+def pkg(file_name):
+    return path.join(PKG, file_name)
+
+CONF = '/home/pi/.cozmars.cfg'
+
+import socket
+IP = socket.gethostbyname(f'{socket.gethostname()}.local')
+
+
+import uuid
+MAC = hex(uuid.getnode())[2:]

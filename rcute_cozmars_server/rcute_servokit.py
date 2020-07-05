@@ -44,6 +44,7 @@ class _Servo:
 class Servo:
     def __init__(self, pwm_out, *, start_angle=0, end_angle=180, min_pulse=750, max_pulse=2250):
         self._pwm_out = pwm_out
+        self._last_fraction = None
         self.set_pulse_width_range(min_pulse, max_pulse)
         self.set_actuation_range(start_angle, end_angle)
 
@@ -66,13 +67,14 @@ class Servo:
         of the actuation range. Is None when servo is diabled (pulsewidth of 0ms).
         """
         if self._pwm_out.duty_cycle == 0 and self._min_duty != 0:  # Special case for disabled servos
-            return None
-        return (self._pwm_out.duty_cycle - self._min_duty) / self._duty_range
+            return self._last_fraction
+        return ((self._pwm_out.duty_cycle - self._min_duty) / self._duty_range)
 
     @fraction.setter
     def fraction(self, value):
         if value is None:
             self._pwm_out.duty_cycle = 0  # disable the motor
+            self._last_fraction = None
             return
         if not 0.0 <= value <= 1.0:
             raise ValueError("Must be 0.0 to 1.0")
@@ -96,3 +98,7 @@ class Servo:
             self.fraction = (new_angle - self._start_angle) / self._angle_range
         else:
             raise ValueError("Angle out of range")
+
+    def relax(self):
+        self._last_fraction = self.fraction
+        self._pwm_out.duty_cycle = 0

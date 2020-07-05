@@ -5,3 +5,4 @@ dist/
 *.egg-info/
 .Trash-1000/
 *.py[cod]
+test.py

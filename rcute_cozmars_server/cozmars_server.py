@@ -1,6 +1,7 @@
 import asyncio, time
 from gpiozero import Motor, Button, TonalBuzzer, DistanceSensor, LineSensor
-from rcute_servokit import ServoKit
+from .rcute_servokit import ServoKit
+from . import util
 
 import board
 import digitalio
@@ -58,7 +59,7 @@ class CozmarsServer:
             a.close()
         self.screen_backlight.fraction = None
 
-    def __init__(self, config_path='/home/pi/.cozmars.cfg'):
+    def __init__(self, config_path=util.CONF):
         with open(config_path) as f:
             self.conf = yaml.safe_load(f)
 
@@ -93,7 +94,7 @@ class CozmarsServer:
         self.servo_update_rate = self.conf['servo']['update_rate']
         self._double_press_max_interval = .5
 
-    def save_config(self, config_path='/home/pi/.cozmars.cfg'):
+    def save_config(self, config_path=util.CONF):
         with open(config_path, 'w') as f:
             yaml.safe_dump(self.conf, f, indent=2)
 
@@ -123,7 +124,8 @@ class CozmarsServer:
 
     def stop_all_motors(self):
         self.lmotor.value = self.rmotor.value = 0
-        self.rarm.fraction = self.larm.fraction= self._head.angle = None
+        self.relax_lift()
+        self.relax_head()
 
     async def backlight(self, *args):
         if not args:
@@ -154,6 +156,12 @@ class CozmarsServer:
         finally:
             self.screen_backlight.fraction = value
 
+    def relax_lift(self):
+        self.larm.relax()
+        self.rarm.relax()
+
+    def relax_head(self):
+        self._head.relax()
 
     async def lift(self, *args):
         if not args:
@@ -243,10 +251,15 @@ class CozmarsServer:
 
     async def play(self, *, request_stream):
         async for note in request_stream:
+            print(note)
             self.buzzer.play(str(note)) if note else self.buzzer.stop()
 
     async def tone(self, note, duration=None):
-        self.buzzer.play(str(note)) if note else self.buzzer.stop()
+        try:
+            note = int(note)
+        except ValueError:
+            pass
+        self.buzzer.play(note) if note else self.buzzer.stop()
         if duration:
             await asyncio.sleep(duration)
             self.buzzer.stop()
@@ -345,13 +358,13 @@ class CozmarsServer:
             stop_ev.set()
             await bg_task
 
-    async def microphone(self, samplerate=16000, dtype='int16'):
+    async def microphone(self, samplerate=16000, dtype='int16', frame_time=.1):
         import sounddevice as sd
-        blocksize_sec = .1
         channels = 1
+        # blocksize_sec = .1
         # bytes_per_sample = dtype[-2:]//8
         # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
-        blocksize = int(blocksize_sec * channels * samplerate)
+        blocksize = int(frame_time * channels * samplerate)
         loop = asyncio.get_running_loop()
         queue = RPCStream(5)
         def cb(indata, frames, time, status):

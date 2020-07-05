@@ -2,10 +2,9 @@ import asyncio
 import sanic
 
 from wsmprpc import RPCServer
-from cozmars_server import CozmarsServer
-
-# https://stackoverflow.com/questions/6028000/how-to-read-a-static-file-from-inside-a-python-package#
-# import pkgutil
+from .cozmars_server import CozmarsServer
+from . import util
+from .version import __version__
 
 app = sanic.Sanic(__name__)
 
@@ -14,10 +13,10 @@ async def before_server_start(request, loop):
     global cozmars_rpc_server
     cozmars_rpc_server = CozmarsServer()
 
-app.static('/static', './static/')
-app.static('/servo', './static/servo.html', content_type="text/html; charset=utf-8")
-app.static('/test', './static/test.html', content_type="text/html; charset=utf-8")
-app.static('/', './static/index.html', content_type="text/html; charset=utf-8")
+app.static('/static', util.STATIC)
+app.static('/servo', util.static('servo.html'), content_type="text/html; charset=utf-8")
+app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
+app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
 
 @app.websocket('/rpc')
 async def rpc(request, ws):
@@ -34,37 +33,24 @@ def reboot(request):
     from subprocess import check_call
     check_call(['sudo', 'reboot'])
 
-def _mac():
-    import uuid
-    return hex(uuid.getnode())[2:]
-
 @app.route('/serial')
 def serial(request):
-    return sanic.response.text(_serial()[-4:])
-
-def _ip():
-    import socket
-    return socket.gethostbyname(f'{socket.gethostname()}.local')
+    return sanic.response.text(util.MAC[-4:])
 
 @app.route('/ip')
 def ip(request):
-    import socket
-    return sanic.response.text(_ip())
-
-def _version():
-    return '1.0.1'
+    return sanic.response.text(util.IP)
 
 @app.route('/version')
 def version(request):
-    return sanic.response.text(_version())
+    return sanic.response.text(__version__)
 
 @app.route('/wifi')
 def wifi(request):
     from subprocess import check_output
     s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant-wlan0.conf".split(' ')).decode()
     ssid, pw = [a[a.find('"')+1:-1] for a in s.split('\n')[:2]]
-    # return sanic.response.html(pkgutil.get_data(__name__, 'static/wifi.tmpl').decode().format(ssid=ssid, pw=pw))
-    with open('./static/wifi.tmpl') as file:
+    with open(util.static('wifi.tmpl')) as file:
         return sanic.response.html(file.read().format(ssid=ssid, pw=pw))
 
 @app.route('/save_wifi', methods=['POST', 'GET'])
@@ -72,35 +58,42 @@ def save_wifi(request):
     from subprocess import check_call
     try:
         ssid, pw = [(request.form or request.args)[a][0] for a in ['ssid', 'pass']]
-        check_call(f'sudo sh save_wifi.sh {ssid} {pw}'.split(' '))
+        check_call(f'sudo sh {util.pkg("save_wifi.sh")} {ssid} {pw}'.split(' '))
         return sanic.response.html("<p style='color:green'>wifi设置已保存，<form action='reboot'><input type='submit' value='重启cozmars'></form></p>")
     except Exception as e:
         return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
 
 @app.route('/about')
 def about(request):
-    mac = _mac()
-    # return sanic.response.html(pkgutil.get_data(__name__, 'static/about.tmpl').decode().format(version=_version(),mac=':'.join([mac[i:i+2] for i in range(0,12,2)]),serial=mac[-4:],ip=_ip()))
-    with open('./static/about.tmpl') as file:
-        return sanic.response.html(file.read().format(version=_version(),mac=':'.join([mac[i:i+2] for i in range(0,12,2)]),serial=mac[-4:],ip=_ip()))
+    with open(util.static('about.tmpl')) as file:
+        return sanic.response.html(file.read().format(version=__version__, mac=':'.join([util.MAC[i:i+2] for i in range(0,12,2)]),serial=util.MAC[-4:],ip=util.IP))
 
 @app.route('/upgrade')
 def upgrade(request):
 
     async def streaming_fn(response):
-        proc = await asyncio.create_subprocess_shell('sudo pip3 install rcute-cozmars-server -U', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        await response.write('<p>正在检查更新，请稍等...</p>')
+        proc = await asyncio.create_subprocess_shell('sudo pip3 install rcute-cozmars-server -U -i https://pypi.tuna.tsinghua.edu.cn/simple', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
 
-        async def write(stream, format):
+        err_flag = False
+        async def write(stream, format, err):
+            nonlocal err_flag
             while True:
                 line = await stream.readline()
                 if line:
                     await response.write(format % line.decode().rstrip())
+                    if err:
+                        err_flag = True
                 else:
                     break
 
         await asyncio.wait([write(proc.stdout, '%s<br>'),
                             write(proc.stderr, '<span style="color:red">%s</span><br>')])
-    return sanic.response.stream(streaming_fn, content_type='text/html')
+        if err_flag:
+            await response.write("<p style='color:red'>********* 更新失败 *********</p>")
+        else:
+            await response.write("<p style='color:green'>********* 更新完成 *********<br><form action='reboot'><input type='submit' value='重启cozmars'></form></p>")
+    return sanic.response.stream(streaming_fn, content_type='text/html; charset=utf-8')
 
 # if __name__ == "__main__":
 app.run(host="0.0.0.0", port=80, debug=False)
