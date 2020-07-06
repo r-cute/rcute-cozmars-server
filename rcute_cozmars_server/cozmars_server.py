@@ -1,5 +1,6 @@
 import asyncio, time
 from gpiozero import Motor, Button, TonalBuzzer, DistanceSensor, LineSensor
+from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
 from . import util
 
@@ -250,16 +251,11 @@ class CozmarsServer:
         raise NotImplemented
 
     async def play(self, *, request_stream):
-        async for note in request_stream:
-            print(note)
-            self.buzzer.play(str(note)) if note else self.buzzer.stop()
+        async for freq in request_stream:
+            self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
 
-    async def tone(self, note, duration=None):
-        try:
-            note = int(note)
-        except ValueError:
-            pass
-        self.buzzer.play(note) if note else self.buzzer.stop()
+    async def tone(self, freq, duration=None):
+        self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
         if duration:
             await asyncio.sleep(duration)
             self.buzzer.stop()
