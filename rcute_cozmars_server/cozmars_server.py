@@ -23,7 +23,8 @@ class CozmarsServer:
         self.buzzer = TonalBuzzer(self.conf['buzzer'])
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
-        self.sonar = DistanceSensor(trigger=self.conf['sonar']['trigger'], echo=self.conf['sonar']['echo'], queue_len=5)
+        sonar_cfg = self.conf['sonar']
+        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'],threshold_distance=sonar_cfg['threshold'], queue_len=5)
 
         self._sensor_event_queue = None
         self._button_last_press_time = 0

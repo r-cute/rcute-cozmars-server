@@ -36,3 +36,5 @@ servo:
 sonar:
   echo: 13
   trigger: 26
+  max: 0.5
+  threshold: 0.1
