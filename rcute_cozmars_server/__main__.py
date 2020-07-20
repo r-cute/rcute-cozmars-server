@@ -15,8 +15,8 @@ async def before_server_start(request, loop):
 
 app.static('/static', util.STATIC)
 app.static('/servo', util.static('servo.html'), content_type="text/html; charset=utf-8")
-app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
-app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
+# app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
+# app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
 
 @app.websocket('/rpc')
 async def rpc(request, ws):
@@ -63,7 +63,8 @@ def save_wifi(request):
     except Exception as e:
         return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
 
-@app.route('/about')
+# @app.route('/about')
+@app.route('/')
 def about(request):
     with open(util.static('about.tmpl')) as file:
         return sanic.response.html(file.read().format(version=__version__, mac=':'.join([util.MAC[i:i+2] for i in range(0,12,2)]),serial=util.MAC[-4:],ip=util.IP))

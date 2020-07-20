@@ -81,7 +81,7 @@ class CozmarsServer:
         self._head.set_actuation_range(-30, 30)
 
         self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
-        self.screen_backlight.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
+        self.screen_backlight.set_pulse_width_range(0, 100000//self.conf['servo']['freq'])
         self.screen_backlight.fraction = 0
         spi = board.SPI()
         cs_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["cs"]}'))
