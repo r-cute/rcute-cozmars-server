@@ -15,7 +15,7 @@ async def before_server_start(request, loop):
 
 app.static('/static', util.STATIC)
 app.static('/servo', util.static('servo.html'), content_type="text/html; charset=utf-8")
-# app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
+app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
 # app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
 
 @app.websocket('/rpc')

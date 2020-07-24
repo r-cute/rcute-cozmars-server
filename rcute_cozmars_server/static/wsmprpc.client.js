@@ -157,10 +157,11 @@ class RPCClient{
                         this._send_stream_chunck(msgid, e)
                     this._send_stream_end(msgid)
                 }else if(typeof request_stream[Symbol.asyncIterator] === 'function'){
+                    const that = this;
                     (async function(){
                         for await(var e of request_stream)
-                            this._send_stream_chunck(msgid, e)
-                        this._send_stream_end(msgid)
+                            that._send_stream_chunck(msgid, e)
+                        that._send_stream_end(msgid)
                     })()
                 }
             }

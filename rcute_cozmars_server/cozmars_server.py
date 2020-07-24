@@ -47,7 +47,7 @@ class CozmarsServer:
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
         self.screen.fill(0)
-        self.screen_backlight.fraction = .1
+        self.screen_backlight.fraction = .05
 
         return self
 
