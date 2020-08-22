@@ -24,7 +24,7 @@ class CozmarsServer:
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
         sonar_cfg = self.conf['sonar']
-        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'],threshold_distance=sonar_cfg['threshold'], queue_len=5)
+        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'],threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
 
         self._sensor_event_queue = None
         self._button_last_press_time = 0
