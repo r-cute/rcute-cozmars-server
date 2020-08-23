@@ -48,7 +48,7 @@ def version(request):
 @app.route('/wifi')
 def wifi(request):
     from subprocess import check_output
-    s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant-wlan0.conf".split(' ')).decode()
+    s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant.conf".split(' ')).decode()
     ssid, pw = [a[a.find('"')+1:-1] for a in s.split('\n')[:2]]
     with open(util.static('wifi.tmpl')) as file:
         return sanic.response.html(file.read().format(ssid=ssid, pw=pw))

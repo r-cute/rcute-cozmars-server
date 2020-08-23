@@ -32,7 +32,7 @@ servo:
     channel: 11
     max_pulse: 920
     min_pulse: 490
-  update_rate: 15
+  update_rate: 20
 sonar:
   echo: 13
   trigger: 26

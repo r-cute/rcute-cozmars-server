@@ -114,7 +114,7 @@ class CozmarsServer:
         return get_conf(self.conf, name.split('.'))
 
     async def speed(self, speed=None, duration=None):
-        if not speed:
+        if speed is None:
             return self.lmotor.value, self.rmotor.value
         try:
             self.lmotor.value, self.rmotor.value = speed
