@@ -20,6 +20,11 @@ app.static('/test', util.static('test.html'), content_type="text/html; charset=u
 
 @app.websocket('/rpc')
 async def rpc(request, ws):
+    if cozmars_rpc_server.lock.locked():
+        await ws.send('-1')
+        await ws.close()
+        return
+    await ws.send('0')
     async with cozmars_rpc_server:
         await RPCServer(ws, cozmars_rpc_server).run()
 

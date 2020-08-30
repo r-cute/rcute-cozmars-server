@@ -1,5 +1,7 @@
 import asyncio, time
-from gpiozero import Motor, Button, TonalBuzzer, DistanceSensor, LineSensor
+from collections import Iterable
+from gpiozero import Motor, Button, TonalBuzzer, LineSensor#, DistanceSensor
+from .distance_sensor import DistanceSensor
 from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
 from . import util
@@ -24,7 +26,7 @@ class CozmarsServer:
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
         sonar_cfg = self.conf['sonar']
-        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'],threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
+        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
 
         self._sensor_event_queue = None
         self._button_last_press_time = 0
@@ -113,16 +115,34 @@ class CozmarsServer:
             return conf[name[0]] if len(name)==1 else get_conf(conf[name[0]], name[1:])
         return get_conf(self.conf, name.split('.'))
 
+    def real_speed(self, sp):
+        # the motors won't run when speed is lower than .2,
+        # so we map speed from (0, 1] => (.2, 1], (0, -1] => (-.2, -1] and 0 => 0
+        return sp*.8 + (.2 if sp>0 else -.2) if sp else 0
+
+    def mapped_speed(self, sp):
+        # real speed -> mapped speed
+        return min(1, max(-1, (sp-((.2 if sp>0 else -.2)))/.8 if sp else 0))
+
     async def speed(self, speed=None, duration=None):
         if speed is None:
-            return self.lmotor.value, self.rmotor.value
-        try:
-            self.lmotor.value, self.rmotor.value = speed
-        except TypeError:
-            self.lmotor.value = self.rmotor.value = speed
+            return self.mapped_speed(self.lmotor.value), self.mapped_speed(self.rmotor.value)
+        speed = tuple(map(self.real_speed, speed)) if isinstance(speed, Iterable) else (self.real_speed(speed), self.real_speed(speed))
+        while (self.lmotor.value, self.rmotor.value) != speed:
+            linc = speed[0] - self.lmotor.value
+            if 0< abs(linc) < .5:
+                self.lmotor.value = speed[0]
+            elif linc:
+                self.lmotor.value += .5 if linc> 0 else -.5
+            rinc = speed[1] - self.rmotor.value
+            if 0 < abs(rinc) < .5:
+                self.rmotor.value = speed[1]
+            elif rinc:
+                self.rmotor.value += .5 if rinc> 0 else -.5
+            await asyncio.sleep(.15)
         if duration:
             await asyncio.sleep(duration)
-            self.lmotor.value = self.rmotor.value = 0
+            await self.speed((0, 0))
 
     def stop_all_motors(self):
         self.lmotor.value = self.rmotor.value = 0
