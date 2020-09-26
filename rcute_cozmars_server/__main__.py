@@ -38,17 +38,9 @@ def reboot(request):
     from subprocess import check_call
     check_call(['sudo', 'reboot'])
 
-@app.route('/serial')
+@app.route('/about')
 def serial(request):
-    return sanic.response.text(util.MAC[-4:])
-
-@app.route('/ip')
-def ip(request):
-    return sanic.response.text(util.IP)
-
-@app.route('/version')
-def version(request):
-    return sanic.response.text(__version__)
+    return sanic.response.json({'hostname': util.HOSTNAME, 'mac': util.MAC, 'serial':util.MAC[-4:], 'version': __version__, 'ip': util.IP})
 
 @app.route('/wifi')
 def wifi(request):
@@ -68,7 +60,6 @@ def save_wifi(request):
     except Exception as e:
         return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
 
-# @app.route('/about')
 @app.route('/')
 def about(request):
     with open(util.static('about.tmpl')) as file:

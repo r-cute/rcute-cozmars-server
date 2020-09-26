@@ -13,7 +13,7 @@ CONF = '/home/pi/.cozmars.cfg'
 
 import socket
 IP = socket.gethostbyname(f'{socket.gethostname()}.local')
-
+HOSTNAME = socket.gethostname()
 
 import uuid
 MAC = hex(uuid.getnode())[2:]
