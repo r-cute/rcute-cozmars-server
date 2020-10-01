@@ -61,8 +61,8 @@ def save_wifi(request):
         return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
 
 @app.route('/')
-def about(request):
-    with open(util.static('about.tmpl')) as file:
+def index(request):
+    with open(util.static('index.tmpl')) as file:
         return sanic.response.html(file.read().format(version=__version__, mac=':'.join([util.MAC[i:i+2] for i in range(0,12,2)]),serial=util.MAC[-4:],ip=util.IP))
 
 @app.route('/upgrade')

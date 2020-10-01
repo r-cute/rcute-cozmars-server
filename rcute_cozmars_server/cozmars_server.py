@@ -19,6 +19,7 @@ from wsmprpc import RPCStream
 class CozmarsServer:
     async def __aenter__(self):
         await self.lock.acquire()
+        self.reset_servos()
         self.lmotor = Motor(*self.conf['motor']['left'])
         self.rmotor = Motor(*self.conf['motor']['right'])
         self.button = Button(self.conf['button'])
@@ -72,16 +73,6 @@ class CozmarsServer:
 
         self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
 
-        def conf_servo(servokit, conf):
-            servo = servokit.servo[conf['channel']]
-            servo.set_pulse_width_range(conf['min_pulse'], conf['max_pulse'])
-            return servo
-
-        self.larm = conf_servo(self.servokit, self.conf['servo']['right_arm'])
-        self.rarm = conf_servo(self.servokit, self.conf['servo']['left_arm'])
-        self._head = conf_servo(self.servokit, self.conf['servo']['head'])
-        self._head.set_actuation_range(-30, 30)
-
         self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
         self.screen_backlight.set_pulse_width_range(0, 100000//self.conf['servo']['freq'])
         self.screen_backlight.fraction = 0
@@ -97,6 +88,18 @@ class CozmarsServer:
         )
         self.servo_update_rate = self.conf['servo']['update_rate']
         self._double_press_max_interval = .5
+
+    @staticmethod
+    def conf_servo(servokit, conf):
+        servo = servokit.servo[conf['channel']]
+        servo.set_pulse_width_range(conf['min_pulse'], conf['max_pulse'])
+        return servo
+
+    def reset_servos(self):
+        self.larm = conf_servo(self.servokit, self.conf['servo']['right_arm'])
+        self.rarm = conf_servo(self.servokit, self.conf['servo']['left_arm'])
+        self._head = conf_servo(self.servokit, self.conf['servo']['head'])
+        self._head.set_actuation_range(-30, 30)
 
     def save_config(self, config_path=util.CONF):
         with open(config_path, 'w') as f:

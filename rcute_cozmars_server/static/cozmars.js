@@ -43,7 +43,7 @@ class Cozmars {
 		return new Promise((r,j)=>{
 			const ws = new WebSocket('ws://'+that.host+'/rpc');
 			this.ws = ws;
-			ws.onopen = (e)=>{
+			ws.onopen = async(e)=>{
 				that._stub = new RPCClient(ws);
 				that._startSensorTask();
 				// that.eyes.animate(that,[]);

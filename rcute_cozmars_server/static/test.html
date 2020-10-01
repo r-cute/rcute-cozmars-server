@@ -12,18 +12,19 @@ js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
 <h3>传感器数据</h3>
 <table><tr><td>按钮</td><td id='button'></td></tr><tr><td>距离</td><td id='sonar'></td></tr><tr><td>红外</td><td id='ir'></td></tr></table>
 <h3>舵机测试</h3><button onclick='robot.head.angle(30)'>抬头</button><button onclick='robot.head.angle(-30)'>低头</button><button onclick='robot.lift.height(1)'>举起</button><button onclick='robot.lift.height(0)'>放下</button>
-<h3>马达测试</h3><button onclick='robot.motor.speed([-1,1],2)'>左转</button><button onclick='robot.motor.speed([1,-1],2)'>右转</button>
+<h3>马达测试&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id='sec' size='3' value='2'/>&nbsp;s</h3><button onclick='robot.motor.speed([-1,1],parseInt(q("#sec").value))'>左转</button><button onclick='robot.motor.speed([1,-1],parseInt(q("#sec").value))'>右转</button><button onclick='robot.motor.speed([1,1],parseInt(q("#sec").value))'>前进</button><button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>后退</button><button onclick='robot.motor.speed([0,0])'>停止</button>
 <h3>蜂鸣器测试</h3><button onclick='robot.buzzer.play("A4,A4", 120)'>嘀嘀</button>
+<h3>显示屏测试</h3><button onclick='robot.screen.fill([Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256)])'>随机颜色</button><button onclick='robot.screen.brightness(0.8,1)'>亮</button><button onclick='robot.screen.brightness(0.1,1)'>暗</button>
 <script defer>
 const button=document.getElementById('button');
 const sonar=document.getElementById('sonar');
 const ir=document.getElementById('ir');
 const robot=new Cozmars(ip=location.host);
-robot.connect().catch(console.error);
+robot.connect().catch(alert);
 setInterval(function(){
 	ir.innerText=robot.infrared.state;
 	button.innerText=robot.button.doublePressed?"double pressed":(robot.button.held?"held":(robot.button.pressed?"pressed":'released'));
 	sonar.innerText=robot.sonar.distance;
 },300);
-</script>
+</script><style>button{margin-left: 10px;margin-right: 10px;}</style>
 </body></html>
