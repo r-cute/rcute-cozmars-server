@@ -38,21 +38,15 @@ class Cozmars {
 			this.lift.height(null);
 		}
 	}
-	connect(){
-		const that = this;
-		return new Promise((r,j)=>{
-			const ws = new WebSocket('ws://'+that.host+'/rpc');
-			this.ws = ws;
-			ws.onopen = async(e)=>{
-				that._stub = new RPCClient(ws);
-				that._startSensorTask();
-				// that.eyes.animate(that,[]);
-				that._connected = true;
-				r();
-			}
-			ws.onclose = (e)=>{console.debug('cozmars ws closed'); that.disconnect();} 
-			ws.onerror = (e)=>{console.error('cozmars ws error:', e); j();}
-		})
+	async connect(){
+		const ws = new WebSocket('ws://'+this.host+'/rpc');
+		ws.onclose = (e)=>{console.debug('cozmars ws closed'); this.disconnect();} 
+		ws.onerror = (e)=>{console.error('cozmars ws error:', e);}
+		if('-1' == await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})) throw '请先关闭其他正在连接 Cozmars 的程序或页面';
+		this.ws = ws;
+		this._stub = new RPCClient(ws);
+		this._startSensorTask();
+		this._connected = true;
 	}
 	disconnect(){
 		this._sensorTask && this._sensorTask.reject();
