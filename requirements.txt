@@ -1,7 +1,6 @@
 adafruit-circuitpython-servokit
 adafruit-circuitpython-rgb-display
 gpiozero
-pyyaml
 picamera
 sounddevice
 sanic

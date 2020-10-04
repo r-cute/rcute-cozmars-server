@@ -9,7 +9,7 @@ def static(file_name):
 def pkg(file_name):
     return path.join(PKG, file_name)
 
-CONF = '/home/pi/.cozmars.cfg'
+CONF = '/home/pi/.cozmars.json'
 
 import socket
 IP = socket.gethostbyname(f'{socket.gethostname()}.local')
@@ -17,3 +17,4 @@ HOSTNAME = socket.gethostname()
 
 import uuid
 MAC = hex(uuid.getnode())[2:]
+SERIAL = MAC[-5:-3]+MAC[-2:]

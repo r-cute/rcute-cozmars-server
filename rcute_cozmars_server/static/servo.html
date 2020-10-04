@@ -12,21 +12,24 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script> -->
 <script>
 	function js_alter(b, src){if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}function q(d){return document.querySelector(d)}function sleep(sec){return new Promise((r,j)=>{setTimeout(r,sec*1000)})}
 	js_alter(typeof msgpack=='undefined', 'static/msgpack.min.js');
 	js_alter(typeof RPCClient=='undefined', 'static/client.js');
-	js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
-</script><script defer> 	
-	var ws = new WebSocket("ws://"+location.host+"/rpc");
+	// js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
+</script><script defer>
 	var stub, conf;
-	async function get_config(){
-		conf = await stub.rpc('config', ['servo']);
-		['head','left_arm','right_arm'].forEach(i=>{
-			q('input[name='+i+'_min]').value=conf[i].min_pulse;
-			q('input[name='+i+'_max]').value=conf[i].max_pulse;
-		})}
+	function reset_config() {
+		return fetch('http://'+location.host+'/config').then(j=>j.json()).then(c=>{
+			conf = c.servo;
+			['head','left_arm','right_arm'].forEach(i=>{
+				q('input[name='+i+'_min]').value=conf[i].min_pulse;
+				q('input[name='+i+'_max]').value=conf[i].max_pulse;
+			});
+		});
+	}
+	reset_config();
 	async function cal_servo(name){
 		await stub.rpc('calibrate_servo',[conf[name].channel,parseFloat(q('input[name='+name+'_min]').value),parseFloat(q('input[name='+name+'_max]').value)])
 		await set_servo(name=='head'?'head':'lift')
@@ -38,13 +41,17 @@
 		await sleep(0.5)
 		await stub.rpc(name,[null])
 	}
-	new Promise((r,j)=>{ws.onmessage=e=>{e=='0'?r():j(e)}}).catch(e=>{alert('请先关闭正在连接 Cozmars 的其他程序或页面')}).then(()=>{
+	(async()=>{
+		var ws = new WebSocket("ws://"+location.host+"/rpc");
+		if('-1'==await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})){
+			alert('请先关闭正在连接 Cozmars 的其他程序或页面');
+			return;
+		}
 		stub = new RPCClient(ws);
-		get_config();
-	});
+	})();
 </script>
 <h1>舵机校准</h1>
-<p style='background-color:yellow;text-align:left'>出厂时舵机已经调试好，一般不需要再进行校准<br>只有在<a href='test'>测试</a>中舵机无法到达指定位置时才需要校准<br><span style='color:red'>警告: 点击保存后将无法恢复出厂设置！</span></p>
+<p>出厂时舵机已经调试好，一般不需要再进行校准<br>只有在 <a href='test'>测试</a> 中舵机无法到达指定位置时才需要校准</p><p style='background-color:yellow;text-align:left;color:red;padding:10px;'>警告: 点击保存后将无法恢复出厂设置！</p>
 <h2>头部&nbsp;&nbsp;&nbsp;&nbsp;<span id='head_val'>0°</span></h2>
 <div>-30°<input class='bottom' type='range' max="30" min='-30' value="0" step='5' name='head' oninput='set_servo("head")'>30°</div>
 <div><input class='left' type='number' size="1" name='head_min' onchange="cal_servo('head')"><input class='right' type='number' size="1" name='head_max' onchange="cal_servo('head')"></div><div><button class="right" onclick="cal_servo('head')">测试</button></div>
@@ -54,5 +61,5 @@
 <div><input class='left' type='number' size="1" name='left_arm_min' onchange="cal_servo('left_arm')"><input class='right' type='number' size="1" name='left_arm_max' onchange="cal_servo('left_arm')"></div><div><button class="right" onclick="cal_servo('left_arm')">测试</button></div>
 <h3>右臂</h3>
 <div><input class='left' type='number' size="1" name='right_arm_min' onchange="cal_servo('right_arm')"><input class='right' type='number' size="1" name='right_arm_max' onchange="cal_servo('right_arm')"></div><div><button class="right" onclick="cal_servo('right_arm')">测试</button></div>
-<div style="margin-top: 70px"><button style='margin-right:100px;' onclick="stub.rpc('reset_servos',[];get_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_config',[])">保存</button></div>
+<div style="margin-top: 70px"><button style='margin-right:100px;' onclick="stub.rpc('reset_servos',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_config',[])">保存</button></div>
 </body></html>

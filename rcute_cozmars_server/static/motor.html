@@ -1,0 +1,66 @@
+<html><head><title>Cozmars</title></head><body>
+<style>
+	body{text-align:center;max-width:400px}
+	input[type=range]{width:300px;}
+	div{clear:both;}
+	.top{vertical-align: top}
+	.bottom{vertical-align: bottom}
+	.right{float:right;}
+	.left{float:left;}
+	h2{margin-top: 50px;margin-bottom: 5px}
+	h3{margin: 0px;clear: both}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script> -->
+<script>
+	function js_alter(b, src){if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}function q(d){return document.querySelector(d)}function sleep(sec){return new Promise((r,j)=>{setTimeout(r,sec*1000)})}
+	js_alter(typeof msgpack=='undefined', 'static/msgpack.min.js');
+	js_alter(typeof RPCClient=='undefined', 'static/client.js');
+	// js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
+</script><script defer>
+	var stub, conf, speed=[0,0];
+	function reset_config() {
+		return fetch('http://'+location.host+'/config').then(j=>j.json()).then(c=>{
+			conf = c.motor;
+			['forward','backward'].forEach(i=>{
+				if(conf[i][0]<1)q('input[name='+i+']').value=conf[i][0]-1;
+				else if(conf[i][1]<1)q('input[name='+i+']').value=1-conf[i][1];				
+				q('#'+i).innerText=conf[i][0]+' / '+conf[i][1];
+			});
+		});
+	}
+	reset_config();
+	function get_cal(v){
+		if(v<0) return [1+v,1];
+		else if(v>0) return [1,1-v];
+		return [1,1];
+	}
+	async function set_speed(l,r){speed=[l,r];await stub.rpc('speed',[speed]);}
+	async function cal_motor(name){
+		var cali=get_cal(parseFloat(q('input[name='+name+']').value));
+		q('#'+name).innerText=cali[0]+' / '+cali[1];
+		await stub.rpc('calibrate_motor',[name, ...cali]);		
+		await stub.rpc('speed',[speed]);
+	}
+	(async()=>{
+		var ws = new WebSocket("ws://"+location.host+"/rpc");
+		if('-1'==await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})){
+			alert('请先关闭正在连接 Cozmars 的其他程序或页面');
+			return;
+		}
+		stub = new RPCClient(ws);
+	})();
+</script>
+<h1>马达校准</h1>
+<p>出厂时已经调试好，一般不需要再进行校准<br>只有在前进或后退无法走直线时才需要校准</p><p style='background-color:yellow;text-align:left;color:red;padding:10px;'>警告: 点击保存后将无法恢复出厂设置！</p>
+<br><br><h3>前进&nbsp;&nbsp;&nbsp;<span id='forward'></span></h3>
+<input class='bottom' type='range' max="0.3" min='-0.3' value="0" step='0.05' name='forward' oninput='cal_motor("forward")'><br><br>
+<button style='margin-right:100px;' onclick="set_speed(1,1)">前进</button><button onclick="set_speed(0,0)">停止</button>
+
+<br><br><br><br><h3>后退&nbsp;&nbsp;&nbsp;<span id='backward'></span></h3>
+<input type='range' max="0.3" min='-0.3' value="0" step='0.05' name='backward' oninput='cal_motor("backward")'><br><br>
+<button style='margin-right:100px;' onclick="set_speed(-1,-1)">后退</button><button onclick="set_speed(0,0)">停止</button>
+
+<br><br><br><br><br><button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_config',[])">保存</button>
+</body></html>

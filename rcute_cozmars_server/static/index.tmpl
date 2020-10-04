@@ -10,13 +10,13 @@
 <tr><td>固件</td><td>当前版本 {version}，最新版本 <span id='latest_version'>...</span> <form id='upgrade' action='upgrade' style="display:none"><input type='submit' value="更新"/></form></td></tr>
 </table>
 <h2>设置</h2>
-<a href='wifi'><button>wifi 设置</button></a><a href='test'><button>功能检测</button></a><a href='servo'><button>舵机校准</button></a>
-<h2>电源</h2><a href='poweroff'><button>关机</button></a><a href='reboot'><button>重启</button></a><br>软件关机后请等待 Cozmars 机器人头部内的电源灯熄灭后再按下侧面的电源键</body><style>
-button{margin:10px;}
+<a href='wifi'><button>wifi 设置</button></a><a href='test'><button>功能检测</button></a><a href='servo'><button>舵机校准</button></a><a href='motor'><button>马达校准</button></a>
+<h2>电源</h2><form action='poweroff' onsubmit='return confirm("确定关机？")'><input type='submit' value='关机'></form><form action='reboot' onsubmit='return confirm("确定重启？")'><input type='submit' value='重启'></form></body><style>
+button,form{{margin:10px;}}form{{display:inline;}}
 </style><script>
-function q(s){return document.querySelector(s);}
-fetch('https://pypi.org/pypi/rcute-cozmars-server/json').then(j=>j.json()).then(j=>j.info.version).then(latest_version=>{
+function q(s){{return document.querySelector(s);}}
+fetch('https://pypi.org/pypi/rcute-cozmars-server/json').then(j=>j.json()).then(j=>j.info.version).then(latest_version=>{{
 	q('#latest_version').innerText=latest_version;
 	if(latest_version!='{version}')q('#upgrade').style.display='inline';
-});
+}});
 </script></html>

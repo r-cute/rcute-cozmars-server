@@ -15,7 +15,9 @@ async def before_server_start(request, loop):
 
 app.static('/static', util.STATIC)
 app.static('/servo', util.static('servo.html'), content_type="text/html; charset=utf-8")
+app.static('/motor', util.static('motor.html'), content_type="text/html; charset=utf-8")
 app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
+app.static('/config', util.CONF, content_type="application/json")
 # app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
 
 @app.websocket('/rpc')
@@ -30,25 +32,33 @@ async def rpc(request, ws):
 
 @app.route('/poweroff')
 def poweroff(request):
-    from subprocess import check_call
-    check_call(['sudo', 'poweroff'])
+    async def _poweroff():
+        from subprocess import check_call
+        await asyncio.sleep(1)
+        check_call(['sudo', 'poweroff'])
+    asyncio.create_task(_poweroff())
+    return sanic.response.html('<p>正在关机...</p><p>软件关机后请等待 Cozmars 机器人头部内的电源灯熄灭后再按下侧面的电源键</p>')
 
 @app.route('/reboot')
 def reboot(request):
-    from subprocess import check_call
-    check_call(['sudo', 'reboot'])
+    async def _reboot():
+        from subprocess import check_call
+        await asyncio.sleep(1)
+        check_call(['sudo', 'reboot'])
+    asyncio.create_task(_reboot())
+    return sanic.response.html('<p>正在重启...</p><p>大概需要几十秒至一分钟</p>')
 
 @app.route('/about')
 def serial(request):
-    return sanic.response.json({'hostname': util.HOSTNAME, 'mac': util.MAC, 'serial':util.MAC[-4:], 'version': __version__, 'ip': util.IP})
+    return sanic.response.json({'hostname': util.HOSTNAME, 'mac': util.MAC, 'serial':util.SERIAL, 'version': __version__, 'ip': util.IP})
 
 @app.route('/wifi')
 def wifi(request):
     from subprocess import check_output
     s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant.conf".split(' ')).decode()
-    ssid, pw = [a[a.find('"')+1:-1] for a in s.split('\n')[:2]]
+    ssid, pw = [a[a.find('"')+1:a.rfind('"')] for a in s.split('\n')[:2]]
     with open(util.static('wifi.tmpl')) as file:
-        return sanic.response.html(file.read().format(ssid=ssid, pw=pw))
+        return sanic.response.html(file.read().format(ssid=ssid, hostname=util.HOSTNAME, serial=util.SERIAL))
 
 @app.route('/save_wifi', methods=['POST', 'GET'])
 def save_wifi(request):
@@ -56,7 +66,7 @@ def save_wifi(request):
     try:
         ssid, pw = [(request.form or request.args)[a][0] for a in ['ssid', 'pass']]
         check_call(f'sudo sh {util.pkg("save_wifi.sh")} {ssid} {pw}'.split(' '))
-        return sanic.response.html("<p style='color:green'>wifi设置已保存，<form action='reboot'><input type='submit' value='重启cozmars'></form></p>")
+        return sanic.response.html("<p style='color:green'>wifi设置已保存，重启后生效<form action='reboot'><input type='submit' value='重启 Cozmars'></form></p>")
     except Exception as e:
         return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
 

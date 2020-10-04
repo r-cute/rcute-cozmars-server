@@ -12,20 +12,21 @@ import adafruit_rgb_display.st7789 as st7789
 from adafruit_rgb_display.rgb import color565
 
 from subprocess import check_call, check_output
-import yaml
+import json
 
 from wsmprpc import RPCStream
 
 class CozmarsServer:
     async def __aenter__(self):
         await self.lock.acquire()
-        self.reset_servos()
         self.lmotor = Motor(*self.conf['motor']['left'])
         self.rmotor = Motor(*self.conf['motor']['right'])
+        self.reset_servos()
+        self.reset_motors()
         self.button = Button(self.conf['button'])
         self.buzzer = TonalBuzzer(self.conf['buzzer'])
-        self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10)
-        self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10)
+        self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
+        self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
         sonar_cfg = self.conf['sonar']
         self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
 
@@ -66,7 +67,7 @@ class CozmarsServer:
 
     def __init__(self, config_path=util.CONF):
         with open(config_path) as f:
-            self.conf = yaml.safe_load(f)
+            self.conf = json.load(f)
 
         self.lock = asyncio.Lock()
         self.event_loop = asyncio.get_running_loop()
@@ -95,42 +96,60 @@ class CozmarsServer:
         servo.set_pulse_width_range(conf['min_pulse'], conf['max_pulse'])
         return servo
 
+    def reset_motors(self):
+        self.motor_compensate = {'forward':list(self.conf['motor']['forward']), 'backward':list(self.conf['motor']['backward'])}
+
     def reset_servos(self):
-        self.larm = conf_servo(self.servokit, self.conf['servo']['right_arm'])
-        self.rarm = conf_servo(self.servokit, self.conf['servo']['left_arm'])
-        self._head = conf_servo(self.servokit, self.conf['servo']['head'])
+        self.rarm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['right_arm'])
+        self.larm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['left_arm'])
+        self._head = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['head'])
         self._head.set_actuation_range(-30, 30)
 
     def save_config(self, config_path=util.CONF):
+        # only servo and motor configs are changed
+        for servo_name, servo in zip(('right_arm', 'left_arm', 'head'), (self.rarm, self.larm, self._head)):
+            self.conf['servo'][servo_name]['max_pulse'] = servo.max_pulse
+            self.conf['servo'][servo_name]['min_pulse'] = servo.min_pulse
+        for dir in ('forward', 'backward'):
+            self.conf['motor'][dir] = list(self.motor_compensate[dir])
         with open(config_path, 'w') as f:
-            yaml.safe_dump(self.conf, f, indent=2)
+            json.dump(self.conf, f, indent=2)
+
+    def calibrate_motor(self, direction, left, right):
+        self.motor_compensate[direction] = [left, right]
 
     def calibrate_servo(self, channel, min_pulse=None, max_pulse=None):
+        '''
         for s in self.conf['servo'].values():
             if isinstance(s, dict) and s.get('channel')==channel:
                 s['min_pulse'] = min_pulse
                 s['max_pulse'] = max_pulse
+        '''
         servo = self.servokit.servo[channel]
         servo.set_pulse_width_range(min_pulse or servo.min_pulse, max_pulse or servo.max_pulse)
 
-    def config(self, name):
-        def get_conf(conf, name):
-            return conf[name[0]] if len(name)==1 else get_conf(conf[name[0]], name[1:])
-        return get_conf(self.conf, name.split('.'))
-
     def real_speed(self, sp):
-        # the motors won't run when speed is lower than .2,
-        # so we map speed from (0, 1] => (.2, 1], (0, -1] => (-.2, -1] and 0 => 0
-        return sp*.8 + (.2 if sp>0 else -.2) if sp else 0
+        '''
+        1. compensate for speed inbalance of two motors
+        2. the motors won't run when speed is lower than .2,
+            so we map speed from (0, 1] => (.2, 1], (0, -1] => (-.2, -1] and 0 => 0
+        '''
+        if not isinstance(sp, Iterable):
+            sp = (sp, sp)
+        sp = (s*self.motor_compensate['forward' if s>0 else 'backward'][i] for i, s in enumerate(sp))
+        return tuple((s*.8 + (.2 if s>0 else -.2) if s else 0) for s in sp)
 
     def mapped_speed(self, sp):
         # real speed -> mapped speed
-        return min(1, max(-1, (sp-((.2 if sp>0 else -.2)))/.8 if sp else 0))
+        if not isinstance(sp, Iterable):
+            sp = (sp, sp)
+        sp = (((s-((.2 if s>0 else -.2)))/.8 if s else 0) for s in sp)
+        return tuple(max(-1, min(1, s/self.motor_compensate['forward' if s>0 else 'backward'][i])) for i, s in enumerate(sp))
 
     async def speed(self, speed=None, duration=None):
         if speed is None:
-            return self.mapped_speed(self.lmotor.value), self.mapped_speed(self.rmotor.value)
-        speed = tuple(map(self.real_speed, speed)) if isinstance(speed, Iterable) else (self.real_speed(speed), self.real_speed(speed))
+            return self.mapped_speed((self.lmotor.value, self.rmotor.value))
+        speed = self.real_speed(speed)
         while (self.lmotor.value, self.rmotor.value) != speed:
             linc = speed[0] - self.lmotor.value
             if 0< abs(linc) < .5:

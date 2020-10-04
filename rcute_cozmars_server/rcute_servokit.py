@@ -56,9 +56,22 @@ class Servo:
 
     def set_pulse_width_range(self, min_pulse=750, max_pulse=2250):
         """Change min and max pulse widths."""
+        self._min_pulse, self._max_pulse = min_pulse, max_pulse
         self._min_duty = int((min_pulse * self._pwm_out.frequency) / 1000000 * 0xFFFF)
         max_duty = (max_pulse * self._pwm_out.frequency) / 1000000 * 0xFFFF
         self._duty_range = int(max_duty - self._min_duty)
+
+    @property
+    def channel(self):
+        return self._pwm_out._index
+
+    @property
+    def min_pulse(self):
+        return self._min_pulse
+
+    @property
+    def max_pulse(self):
+        return self._max_pulse
 
     @property
     def fraction(self):
