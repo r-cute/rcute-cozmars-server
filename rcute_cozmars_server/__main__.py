@@ -6,6 +6,7 @@ from wsmprpc import RPCServer
 from .cozmars_server import CozmarsServer
 from . import util
 from .version import __version__
+from websockets.exceptions import ConnectionClosedOK
 
 async def dim_screen(sec):
     global cozmars_rpc_server
@@ -67,11 +68,9 @@ async def rpc(request, ws):
     else:
         dim_screen_task.cancel()
         await ws.send('0')
-        try:
-            async with cozmars_rpc_server:
-                await RPCServer(ws, cozmars_rpc_server).run()
-        except:
-            idle()
+        async with cozmars_rpc_server:
+            await RPCServer(ws, cozmars_rpc_server).run()
+        idle()
 
 def redirect_html(sec, url, txt):
     return "<html><head><meta charset='utf-8'/><meta http-equiv='refresh' content='"+str(sec)+";url="+url+"'/></head><body>"+txt+"</body></html>"
