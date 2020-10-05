@@ -18,20 +18,25 @@ def lightup_screen(sec):
     cozmars_rpc_server.screen_backlight.fraction = .1
     dim_screen_task = asyncio.run_coroutine_threadsafe(dim_screen(5), server_loop)
 
+async def delay_check_call(sec, cmd):
+    await asyncio.sleep(sec)
+    cozmars_rpc_server.screen_backlight.fraction = 0
+    check_call(cmd.split(' '))
+
+async def button_poweroff():
+    cozmars_rpc_server.screen.image(util.poweroff_screen())
+    cozmars_rpc_server.screen_backlight.fraction = .1
+    cozmars_rpc_server.buzzer.play('A4')
+    await asyncio.sleep(.3)
+    cozmars_rpc_server.buzzer.stop()
+    await delay_check_call(5, 'sudo poweroff')
+
 def idle():
-    global cozmars_rpc_server
+    global cozmars_rpc_server, server_loop
     cozmars_rpc_server.screen.image(util.splash_screen())
     cozmars_rpc_server.button.when_pressed = lambda: lightup_screen(5)
     cozmars_rpc_server.button.hold_time = 5
-    def button_poweroff():
-        import time
-        cozmars_rpc_server.screen.image(util.poweroff_screen())
-        cozmars_rpc_server.screen_backlight.fraction = .1
-        cozmars_rpc_server.buzzer.play('A4')
-        time.sleep(.3)
-        cozmars_rpc_server.buzzer.stop()
-        check_call(['sudo', 'poweroff'])
-    cozmars_rpc_server.button.when_held = button_poweroff
+    cozmars_rpc_server.button.when_held = lambda: asyncio.run_coroutine_threadsafe(button_poweroff(), server_loop)
 
 app = sanic.Sanic(__name__)
 
@@ -68,11 +73,6 @@ async def rpc(request, ws):
         except:
             idle()
 
-async def delay_check_call(sec, cmd):
-    await asyncio.sleep(sec)
-    cozmars_rpc_server.screen_backlight.fraction = 0
-    check_call(cmd.split(' '))
-
 def redirect_html(sec, url, txt):
     return "<html><head><meta charset='utf-8'/><meta http-equiv='refresh' content='"+str(sec)+";url="+url+"'/></head><body>"+txt+"</body></html>"
 
@@ -98,7 +98,7 @@ def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
-    return sanic.response.html(redirect_html(20, '/', '<p>正在重启...</p><p>大概需要几十秒至一分钟</p>'))
+    return sanic.response.html(redirect_html(20, '/', '<p>正在重启...</p><p>大约需要一分钟</p>'))
 
 @app.route('/about')
 def serial(request):
@@ -146,8 +146,8 @@ def upgrade(request):
                 else:
                     break
 
-        await asyncio.wait([write(proc.stdout, '%s<br>'),
-                            write(proc.stderr, '<span style="color:red">%s</span><br>')])
+        await asyncio.wait([write(proc.stdout, '%s<br>', False),
+                            write(proc.stderr, '<span style="color:red">%s</span><br>', True)])
         if err_flag:
             await response.write("<p style='color:red'>********* 更新失败 *********</p>")
         else:
