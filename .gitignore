@@ -4,5 +4,6 @@ build/
 dist/
 *.egg-info/
 .Trash-1000/
+rcute_cozmars_server/static/splash.png
 *.py[cod]
-test.py
+test*.py

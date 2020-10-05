@@ -8,7 +8,7 @@ with open(os.path.join(here, 'rcute_cozmars_server', 'version.py')) as f:
     exec(f.read(), ns)
     version = ns['__version__']
 
-description=f"R-Cute 教育机器人 Cozmars 固件，最新版本 {version}"
+description="R-Cute 教育机器人 Cozmars 固件"
 
 with open('./requirements.txt', 'r') as f:
     requirements = [a.strip() for a in f]

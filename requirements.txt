@@ -5,3 +5,5 @@ picamera
 sounddevice
 sanic
 wsmprpc
+Pillow
+# sudo apt install libtiff5 ibopenjp2-7 libportaudio2 python3-cffi 

@@ -84,10 +84,10 @@ class Cozmars {
 							this.sonar.distance = data;
 							break;
 							case 'lir':
-							this.infrared.state = [data^1, this.infrared.state[1]];
+							this.infrared.state = [data, this.infrared.state[1]];
 							break;
 							case 'rir':
-							this.infrared.state = [this.infrared.state[0], data^1];
+							this.infrared.state = [this.infrared.state[0], data];
 							break;
 						}
 					} catch (e) {
@@ -115,7 +115,7 @@ class Screen extends Component{
 	}
 	async fill(bgr) {
 		var [w, h] = this.resolution;
-		await this._stub.rpc('fill', [this.bgr2Color565(bgr), 0, 0, w, h]);
+		await this._stub.rpc('fill', [this.bgr2Color565(bgr), 0, 0, h, w]);
 	}
 	bgr2Color565([b,g,r]) {
 		return (r & 0xF8) << 8 | (g & 0xFC) << 3 | b >> 3

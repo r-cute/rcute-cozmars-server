@@ -23,8 +23,6 @@ class CozmarsServer:
         self.rmotor = Motor(*self.conf['motor']['right'])
         self.reset_servos()
         self.reset_motors()
-        self.button = Button(self.conf['button'])
-        self.buzzer = TonalBuzzer(self.conf['buzzer'])
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
         sonar_cfg = self.conf['sonar']
@@ -45,6 +43,7 @@ class CozmarsServer:
                 self._button_last_press_time = now
         self.lir.when_line = self.lir.when_no_line = cb('lir', self.lir, 'value')
         self.rir.when_line = self.rir.when_no_line = cb('rir', self.rir, 'value')
+        self.button.hold_time = 1
         self.button.when_pressed = button_press_cb
         self.button.when_released = cb('pressed', self.button, 'is_pressed')
         self.button.when_held = cb('held', self.button, 'is_held')
@@ -56,14 +55,16 @@ class CozmarsServer:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        self.__del__()
+        self.stop_all_motors()
+        self.buzzer.stop()
+        for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor]:
+            a.close()
+        self.screen_backlight.fraction = None
         self.lock.release()
 
     def __del__(self):
-        self.stop_all_motors()
-        for a in [self.sonar, self.lir, self.rir, self.button, self.buzzer, self.lmotor, self.rmotor]:
-            a.close()
-        self.screen_backlight.fraction = None
+        self.button.close()
+        self.buzzer.close()
 
     def __init__(self, config_path=util.CONF):
         with open(config_path) as f:
@@ -71,6 +72,9 @@ class CozmarsServer:
 
         self.lock = asyncio.Lock()
         self.event_loop = asyncio.get_running_loop()
+
+        self.button = Button(self.conf['button'])
+        self.buzzer = TonalBuzzer(self.conf['buzzer'])
 
         self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
 
@@ -311,6 +315,8 @@ class CozmarsServer:
             # otherwise if the queue if full,
             # an `asyncio.QueueFull` exception will be raised inside the main loop!
             self._sensor_event_queue = asyncio.Queue()
+            yield 'lir', self.lir.value
+            yield 'rir', self.rir.value
             while True:
                 try:
                     yield await asyncio.wait_for(self._sensor_event_queue.get(), timeout)
@@ -332,11 +338,11 @@ class CozmarsServer:
         else:
             return self.button.hold_repeat
 
-    def held_time(self, *args):
+    def hold_time(self, *args):
         if args:
-            self.button.held_time = args[0]
+            self.button.hold_time = args[0]
         else:
-            return self.button.held_time
+            return self.button.hold_time
 
     def threshold_distance(self, *args):
         if args:
