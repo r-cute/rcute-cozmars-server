@@ -4,6 +4,6 @@ gpiozero
 picamera
 sounddevice
 sanic
-wsmprpc
+wsmprpc>=1.1.0
 Pillow
 # sudo apt install libtiff5 ibopenjp2-7 libportaudio2 python3-cffi 

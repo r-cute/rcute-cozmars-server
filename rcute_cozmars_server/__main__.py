@@ -68,9 +68,11 @@ async def rpc(request, ws):
     else:
         dim_screen_task.cancel()
         await ws.send('0')
-        async with cozmars_rpc_server:
-            await RPCServer(ws, cozmars_rpc_server).run()
-        idle()
+        try:
+            async with cozmars_rpc_server:
+                await RPCServer(ws, cozmars_rpc_server).run()
+        finally:
+            idle()
 
 def redirect_html(sec, url, txt):
     return "<html><head><meta charset='utf-8'/><meta http-equiv='refresh' content='"+str(sec)+";url="+url+"'/></head><body>"+txt+"</body></html>"
@@ -78,12 +80,12 @@ def redirect_html(sec, url, txt):
 @app.route('/restart_wifi')
 def restart_wifi(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart autohotspot.service'))
-    return sanic.response.html(redirect_html(5, '/', '<p>正在重启网络...</p>'))
+    return sanic.response.html(redirect_html(15, '/', '<p>正在重启网络...</p>'))
 
 @app.route('/restart_server')
 def restart_server(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart cozmars.service'))
-    return sanic.response.html(redirect_html(5, '/', '<p>正在重启服务...</p>'))
+    return sanic.response.html(redirect_html(15, '/', '<p>正在重启服务...</p>'))
 
 @app.route('/poweroff')
 def poweroff(request):
@@ -97,7 +99,7 @@ def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
-    return sanic.response.html(redirect_html(20, '/', '<p>正在重启...</p><p>大约需要一分钟</p>'))
+    return sanic.response.html(redirect_html(60, '/', '<p>正在重启...</p><p>大约需要一分钟</p>'))
 
 @app.route('/about')
 def serial(request):
