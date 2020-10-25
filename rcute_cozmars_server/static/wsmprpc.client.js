@@ -174,9 +174,9 @@ class RPCClient{
     _cancel(msgid) {
         const p = this._pop_promise(msgid);
         if(p) {
-            const e = new RPCError('Cancelled by client')
-            p.reject(e)
-            p._response_stream && p._response_stream.put_nowait(e, true)
+            const e = new RPCError('Cancelled by client');
+            p.resolve();//p.reject(e);
+            p._response_stream && p._response_stream.put_nowait(e, true);
         }
         this._send_cancel(msgid)
     }
