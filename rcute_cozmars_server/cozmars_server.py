@@ -156,16 +156,16 @@ class CozmarsServer:
         speed = self.real_speed(speed)
         while (self.lmotor.value, self.rmotor.value) != speed:
             linc = speed[0] - self.lmotor.value
-            if 0< abs(linc) < .5:
+            if 0< abs(linc) < .3:
                 self.lmotor.value = speed[0]
             elif linc:
-                self.lmotor.value += .5 if linc> 0 else -.5
+                self.lmotor.value += .3 if linc> 0 else -.3
             rinc = speed[1] - self.rmotor.value
-            if 0 < abs(rinc) < .5:
+            if 0 < abs(rinc) < .3:
                 self.rmotor.value = speed[1]
             elif rinc:
-                self.rmotor.value += .5 if rinc> 0 else -.5
-            await asyncio.sleep(.15)
+                self.rmotor.value += .3 if rinc> 0 else -.3
+            await asyncio.sleep(.05)
         if duration:
             await asyncio.sleep(duration)
             await self.speed((0, 0))
