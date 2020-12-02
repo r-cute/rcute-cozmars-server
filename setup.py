@@ -18,7 +18,7 @@ setuptools.setup(
     version=version,
     author="Huang Yan",
     author_email="hyansuper@foxmail.com",
-    #license="MIT",
+    license="Non-Commercial",
     description=description,
     long_description=f"#rcute-cozmars-server\n\n{description}",
     long_description_content_type="text/markdown",
@@ -28,7 +28,6 @@ setuptools.setup(
     include_package_data=True,
     classifiers=(
         "Programming Language :: Python :: 3.7",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
     # entry_points={
