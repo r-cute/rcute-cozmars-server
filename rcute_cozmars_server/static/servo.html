@@ -61,5 +61,5 @@
 <div><input class='left' type='number' size="1" name='left_arm_min' onchange="cal_servo('left_arm')"><input class='right' type='number' size="1" name='left_arm_max' onchange="cal_servo('left_arm')"></div><div><button class="right" onclick="cal_servo('left_arm')">测试</button></div>
 <h3>右臂</h3>
 <div><input class='left' type='number' size="1" name='right_arm_min' onchange="cal_servo('right_arm')"><input class='right' type='number' size="1" name='right_arm_max' onchange="cal_servo('right_arm')"></div><div><button class="right" onclick="cal_servo('right_arm')">测试</button></div>
-<div style="margin-top: 70px"><button style='margin-right:100px;' onclick="stub.rpc('reset_servos',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_config',[])">保存</button></div>
+<div style="margin-top: 70px"><button style='margin-right:100px;' onclick="stub.rpc('reset_servos',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_conf',[])">保存</button></div>
 </body></html>

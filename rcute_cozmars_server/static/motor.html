@@ -62,5 +62,5 @@
 <input type='range' max="0.3" min='-0.3' value="0" step='0.05' name='backward' oninput='cal_motor("backward")'><br><br>
 <button style='margin-right:100px;' onclick="set_speed(-1,-1)">后退</button><button onclick="set_speed(0,0)">停止</button>
 
-<br><br><br><br><br><button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_config',[])">保存</button>
+<br><br><br><br><br><button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_conf',[])">保存</button>
 </body></html>

@@ -66,9 +66,12 @@ class CozmarsServer:
         self.button.close()
         self.buzzer.close()
 
-    def __init__(self, config_path=util.CONF):
-        with open(config_path) as f:
-            self.conf = json.load(f)
+    def __init__(self, conf_path=util.CONF, env_path=util.ENV):
+        with open(conf_path) as cf:
+            self.conf = json.load(cf)
+
+        with open(env_path) as ef:
+            self.env = json.load(ef)
 
         self.lock = asyncio.Lock()
         self.event_loop = asyncio.get_running_loop()
@@ -109,14 +112,14 @@ class CozmarsServer:
         self._head = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['head'])
         self._head.set_actuation_range(-30, 30)
 
-    def save_config(self, config_path=util.CONF):
+    def save_conf(self, conf_path=util.CONF):
         # only servo and motor configs are changed
         for servo_name, servo in zip(('right_arm', 'left_arm', 'head'), (self.rarm, self.larm, self._head)):
             self.conf['servo'][servo_name]['max_pulse'] = servo.max_pulse
             self.conf['servo'][servo_name]['min_pulse'] = servo.min_pulse
         for dir in ('forward', 'backward'):
             self.conf['motor'][dir] = list(self.motor_compensate[dir])
-        with open(config_path, 'w') as f:
+        with open(conf_path, 'w') as f:
             json.dump(self.conf, f, indent=2)
 
     def calibrate_motor(self, direction, left, right):
@@ -131,6 +134,19 @@ class CozmarsServer:
         '''
         servo = self.servokit.servo[channel]
         servo.set_pulse_width_range(min_pulse or servo.min_pulse, max_pulse or servo.max_pulse)
+
+    def get_env(self, name):
+        return self.env[name]
+
+    def set_env(self, name, value):
+        self.env[name] = value
+
+    def del_env(self, name):
+        del self.env[name]
+
+    def save_env(self, env_path=util.ENV):
+        with open(env_path, 'w') as f:
+            json.dump(self.env, f, indent=2)
 
     def real_speed(self, sp):
         '''
@@ -359,12 +375,12 @@ class CozmarsServer:
     def distance(self):
         return self.sonar.distance
 
-    def microphone_volumn(self, *args):
+    def microphone_volume(self, *args):
         if args:
             if 0 <= args[0] <= 100:
                 check_output(f'amixer set Boost {args[0]}%'.split(' '))
             else:
-                raise ValueError('volumn must be 0 ~ 100')
+                raise ValueError('volume must be 0 ~ 100')
         else:
             a = check_output('amixer get Boost'.split(' '))
             return int(a[a.index(b'[') + 1 : a.index(b'%')])
@@ -411,7 +427,7 @@ class CozmarsServer:
         # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
         blocksize = int(frame_time * channels * samplerate)
         loop = asyncio.get_running_loop()
-        queue = RPCStream(5)
+        queue = RPCStream(2)
         def cb(indata, frames, time, status):
             nonlocal queue, loop
             if status:
