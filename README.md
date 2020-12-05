@@ -4,7 +4,7 @@ Cozmars, the open source 3d pritable educational robot
 
 ```
 sudo apt install libtiff5 ibopenjp2-7 libportaudio2 python3-cffi
-pip install rcute-cozmars-server
+pip install rcute-cozmars-server==1.*
 cp conf.json /home/pi/.cozmars.conf.json
 cp env.json /home/pi/.cozmars.env.json
 sudo cp cozmars.service /etc/systemd/system
