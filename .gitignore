@@ -7,3 +7,4 @@ dist/
 rcute_cozmars_server/static/splash.png
 *.py[cod]
 test*.py
+todo
