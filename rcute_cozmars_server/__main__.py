@@ -134,7 +134,8 @@ def upgrade(request):
 
     async def streaming_fn(response):
         await response.write('<p>正在检查更新，请稍等...</p>')
-        proc = await asyncio.create_subprocess_shell('sudo python3 -m pip install rcute-cozmars-server==1.* -U', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        update_cmd = util.CONF['update']['cmd']
+        proc = await asyncio.create_subprocess_shell(update_cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
 
         err_flag = False
         async def write(stream, format, err):
