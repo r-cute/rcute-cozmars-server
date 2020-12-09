@@ -1,5 +1,3 @@
-// this is only a template file, 
-// the real file should be placed under /home/pi and be named .cozmars.conf.json
 {
   "button": 4,
   "buzzer": 21,

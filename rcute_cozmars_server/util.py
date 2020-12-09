@@ -10,8 +10,8 @@ def static(file_name):
 def pkg(file_name):
     return path.join(PKG, file_name)
 
-CONF = '/home/pi/.cozmars.conf.json'
-ENV = '/home/pi/.cozmars.env.json'
+CONF = '/home/pi/.cozmars/conf.json'
+ENV = '/home/pi/.cozmars/env.json'
 
 import socket
 IP = socket.gethostbyname(f'{socket.gethostname()}.local')

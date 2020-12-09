@@ -53,7 +53,7 @@
 	})();
 </script>
 <h1>马达校准</h1>
-<p>出厂时已经调试好，一般不需要再进行校准<br>只有在前进或后退无法走直线时才需要校准</p><p style='background-color:yellow;text-align:left;color:red;padding:10px;'>警告: 点击保存后将无法恢复出厂设置！</p>
+<p><!-- 出厂时已经调试好，一般不需要再进行校准<br> -->只有在前进或后退无法走直线时才需要校准</p><p style='background-color:yellow;text-align:left;color:red;padding:10px;'>警告: 点击保存后将无法恢复原设置！</p>
 <br><br><h3>前进&nbsp;&nbsp;&nbsp;<span id='forward'></span></h3>
 <input class='bottom' type='range' max="0.3" min='-0.3' value="0" step='0.05' name='forward' oninput='cal_motor("forward")'><br><br>
 <button style='margin-right:100px;' onclick="set_speed(1,1)">前进</button><button onclick="set_speed(0,0)">停止</button>
@@ -62,5 +62,5 @@
 <input type='range' max="0.3" min='-0.3' value="0" step='0.05' name='backward' oninput='cal_motor("backward")'><br><br>
 <button style='margin-right:100px;' onclick="set_speed(-1,-1)">后退</button><button onclick="set_speed(0,0)">停止</button>
 
-<br><br><br><br><br><button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复出厂设置，确定要保存吗？'))stub.rpc('save_conf',[])">保存</button>
+<br><br><br><br><br><button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">重置</button><button onclick="if(confirm('保存后将无法恢复原设置，确定要保存吗？'))stub.rpc('save_conf',[])">保存</button>
 </body></html>

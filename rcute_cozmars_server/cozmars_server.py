@@ -273,8 +273,8 @@ class CozmarsServer:
         if angle == None:
             self._head.angle = None
             return
-        if not -30 <= angle <= 30:
-            raise ValueError('Angle must be -30 ~ 30')
+        if not -20 <= angle <= 20:
+            raise ValueError('Angle must be -20 ~ 20')
         duration = speed = None
         try:
             duration = args[1]
@@ -285,8 +285,8 @@ class CozmarsServer:
             self._head.angle = angle
             return
         elif speed:
-            if not 0 < speed <= 60 * self.servo_update_rate:
-                raise ValueError(f'Speed must be 0 ~ {60*self.servo_update_rate}')
+            if not 0 < speed <= 80 * self.servo_update_rate:
+                raise ValueError(f'Speed must be 0 ~ {80*self.servo_update_rate}')
             duration = abs(angle - self._head.angle)/speed
         steps = int(duration*self.servo_update_rate)
         interval = 1/self.servo_update_rate
@@ -419,13 +419,13 @@ class CozmarsServer:
             stop_ev.set()
             await bg_task
 
-    async def microphone(self, samplerate=16000, dtype='int16', frame_time=.1):
+    async def microphone(self, samplerate=16000, dtype='int16', block_duration=.1):
         import sounddevice as sd
         channels = 1
         # blocksize_sec = .1
         # bytes_per_sample = dtype[-2:]//8
         # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
-        blocksize = int(frame_time * channels * samplerate)
+        blocksize = int(block_duration * channels * samplerate)
         loop = asyncio.get_running_loop()
         queue = RPCStream(2)
         def cb(indata, frames, time, status):
