@@ -2,7 +2,7 @@
 <p>Cozmars 是由 R-cute 设计的可编程教育机器人，支持 Scratch 和 Python 编程</p>
 <ul><li><a href='https://rcute-cozmars.readthedocs.io' target='blank'>Python SDK 文档</a></li>
 <!-- <li><a href=''>Scratch3 使用说明</a></li>
-<li><a href=''>视频</a></li> -->
+<li><a href=''>视频</a></li> --></ul>
 <h2>关于</h2>
 <table><tr><td>序列号</td><td>{serial}</td></tr>
 <tr><td>IP</td><td>{ip}</td></tr>
@@ -15,7 +15,7 @@
 button,form{{margin:10px;}}form{{display:inline;}}
 </style><script>
 function q(s){{return document.querySelector(s);}}
-fetch('https://pypi.org/pypi/rcute-cozmars-server/json').then(j=>j.json()).then(j=>Object.keys(j.releases).reduce((s,e)=>{return(e[0]=='1')?e:s})).then(latest_version=>{{
+fetch('https://pypi.org/pypi/rcute-cozmars-server/json').then(j=>j.json()).then(j=>Object.keys(j.releases).reduce((s,e)=>{{return(e[0]=='1')?e:s}})).then(latest_version=>{{
 	q('#latest_version').innerText=latest_version;
 	if(latest_version!='{version}')q('#upgrade').style.display='inline';
 }});

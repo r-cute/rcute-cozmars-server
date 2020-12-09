@@ -21,7 +21,7 @@
 </script><script defer>
 	var stub, conf;
 	function reset_config() {
-		return fetch('http://'+location.host+'/config').then(j=>j.json()).then(c=>{
+		return fetch('http://'+location.host+'/conf').then(j=>j.json()).then(c=>{
 			conf = c.servo;
 			['head','left_arm','right_arm'].forEach(i=>{
 				q('input[name='+i+'_min]').value=conf[i].min_pulse;
