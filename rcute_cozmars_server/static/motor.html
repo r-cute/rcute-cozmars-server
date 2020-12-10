@@ -34,7 +34,7 @@
 		}});
 	}}
 	function save_config() {{
-		if(confirm('{_("The factory settings cannot be restored after saving, are you sure you want to save it?")}')) {{
+		if(confirm('{_("The previous settings cannot be restored after saving, are you sure you want to save it?")}')) {{
 			stub.rpc('save_conf',[])
 		}}
 	}}
@@ -62,11 +62,11 @@
 	</script>
 	<h1>{_("Motor calibration")}</h1>
 	<p>
-		{_("It has been debugged before leaving the factory, and generally does not need to be calibrated.")}<br>
+		<!-- {_("It has been debugged before leaving the factory, and generally does not need to be calibrated.")}<br> -->
 		{_("Calibration is only needed when forward or backward cannot go straight.")}
 	</p>
 	<p style='background-color:yellow;text-align:left ;color:red;padding:10px;'>
-		{_("Warning: After clicking Save, the factory settings cannot be restored!")}
+		{_("Warning: After clicking Save, the previous settings cannot be restored!")}
 	</p>
 	<br><br>
 	<h3>{_("Forward")}&nbsp;&nbsp;&nbsp;<span id='forward'></span></h3>
@@ -81,5 +81,5 @@
 	
 	<br><br><br><br><br>
 	<button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">{_("Reset")}</button>
-	<button onclick="if(confirm('{_("The factory settings cannot be restored after saving, are you sure you want to save?")}'))stub.rpc('save_config',[])">{_("Save")}</button>
+	<button onclick="if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save?")}'))stub.rpc('save_config',[])">{_("Save")}</button>
 	</body></html>

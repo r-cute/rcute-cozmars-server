@@ -4,8 +4,17 @@ import gettext
 import locale
 import re
 
+PKG = path.dirname(__file__)
+STATIC = path.join(PKG, 'static')
+
+def static(file_name):
+    return path.join(STATIC, file_name)
+
+def pkg(file_name):
+    return path.join(PKG, file_name)
+
 try:
-    loc = gettext.translation('base', localedir='locales', languages=[locale.getdefaultlocale()[0]])
+    loc = gettext.translation('base', localedir=path.join(PKG, "locales"), languages=[locale.getdefaultlocale()[0]])
     loc.install()
     _ = loc.gettext
     _gettext = loc.gettext
@@ -23,15 +32,6 @@ def parsed_template(name, **kwargs):
         content = re.sub(r'(\{_\("(.*?)"\)\})', replace_gettext, content)
         content = content.format(**kwargs)
         return content
-
-PKG = path.dirname(__file__)
-STATIC = path.join(PKG, 'static')
-
-def static(file_name):
-    return path.join(STATIC, file_name)
-
-def pkg(file_name):
-    return path.join(PKG, file_name)
 
 CONF = '/home/pi/.cozmars/conf.json'
 ENV = '/home/pi/.cozmars/env.json'

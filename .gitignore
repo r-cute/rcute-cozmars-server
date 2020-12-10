@@ -2,6 +2,7 @@
 */__pycache__/
 build/
 dist/
+.eggs/
 *.egg-info/
 .Trash-1000/
 rcute_cozmars_server/static/splash.png

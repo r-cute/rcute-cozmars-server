@@ -160,8 +160,8 @@ class Head extends Component{
 		super(robot);
 		this.autoRelaxDelay = 1;
 	}
-	get maxAngle(){return 30}
-	get minAngle(){return -30}
+	get maxAngle(){return 20}
+	get minAngle(){return -20}
 	async angle(angle, duration=null, speed=null) {
 		if (duration && speed)
 			throw 'Cannot set both duration and speed';

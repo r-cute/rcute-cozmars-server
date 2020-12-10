@@ -1,2 +1,3 @@
 recursive-include rcute_cozmars_server/static *
+recursive-include rcute_cozmars_server/locales *
 include rcute_cozmars_server/save_wifi.sh
