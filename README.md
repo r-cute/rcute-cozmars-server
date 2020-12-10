@@ -1,10 +1,10 @@
 # rcute-cozmars-server
 
-Cozmars, the open source 3d pritable educational robot
+Cozmars, the open source 3d printable educational robot
 
 ## Install
 
-* `sudo rapi-config`
+* `sudo raspi-config`
 	* enable ssh, i2c, spi, camera, and disable serial.
 	* then set rpi's host name as 'rcute-cozmars-xxxx', 'xxxx' being the last 4 digit of mac address.
 	* set your locale.

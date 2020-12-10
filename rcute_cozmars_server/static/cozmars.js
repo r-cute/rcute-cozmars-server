@@ -42,7 +42,7 @@ class Cozmars {
 		const ws = new WebSocket('ws://'+this.host+'/rpc');
 		ws.onclose = (e)=>{console.debug('cozmars ws closed'); this.disconnect();} 
 		ws.onerror = (e)=>{console.error('cozmars ws error:', e);}
-		if('-1' == await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})) throw '请先关闭其他正在连接 Cozmars 的程序或页面';
+		if('-1' == await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})) throw 'Please close other programs or pages that are connecting to Cozmars first';
 		this.ws = ws;
 		this._stub = new RPCClient(ws);
 		this._startSensorTask();

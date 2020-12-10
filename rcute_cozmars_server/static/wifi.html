@@ -1,0 +1,28 @@
+<html><head><title>{_("Cozmars")}</title></head>
+<body>
+    <h1>{_("WiFi Settings")}</h1>
+    <p style='border:1px dashed gray'>
+        {_("Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restarting.")}<br>
+        {_("When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: ")} {hostname}<br> 
+        {_("The password is {serial}{serial}. After connecting, log in to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up.")}
+    </p>
+    <form action='save_wifi' method='post' onsubmit='return check()'>
+        {_("WiFi Name")}:<input type='text' name='ssid' value='{ssid}'><br>
+        {_("WiFi Password")}:<input id='pass' type='password' name='pass' value=''>
+        <a id='eye' href='#' onclick='showhide()'>{_("Show")}</a><br>
+        <input type='submit' value='{_("Save")}'>
+    </form>
+    <script>
+        function q(a){{return document.querySelector(a)}}
+        function showhide(){{
+            var a=q('#eye');
+            var p=document.querySelector('#pass');
+            if(a.innerText=='{_("Show")}'){{p.type='text';a.innerText='{_("Hide")}';}}
+            else{{p.type='password';a.innerText='{_("Show")}';}}
+        }}
+        function check(){{
+            if(q('#pass').value.length() < 8){{alert('{_("Password is less than eight digits")}');return false;}}
+            return true;
+        }}
+    </script>
+</body></html>

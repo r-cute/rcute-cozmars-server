@@ -1,12 +1,14 @@
 import asyncio
 import sanic
-
+import re
 from subprocess import check_call
 from wsmprpc import RPCServer
 from .cozmars_server import CozmarsServer
 from . import util
 from .version import __version__
 from websockets.exceptions import ConnectionClosedOK
+_ = util._
+parsed_template = util.parsed_template
 
 async def dim_screen(sec):
     global cozmars_rpc_server
@@ -54,12 +56,24 @@ async def before_server_start(request, loop):
     cozmars_rpc_server.buzzer.stop()
 
 app.static('/static', util.STATIC)
-app.static('/servo', util.static('servo.html'), content_type="text/html; charset=utf-8")
-app.static('/motor', util.static('motor.html'), content_type="text/html; charset=utf-8")
-app.static('/test', util.static('test.html'), content_type="text/html; charset=utf-8")
 app.static('/conf', util.CONF, content_type="application/json")
 app.static('/env', util.ENV, content_type="application/json")
-# app.static('/', util.static('index.html'), content_type="text/html; charset=utf-8")
+
+@app.route('/')
+def index(request):
+    return sanic.response.html(parsed_template('index', version=__version__, mac=util.MAC, serial=util.SERIAL, ip=util.IP))
+
+@app.route('/servo')
+def servo(request):
+    return sanic.response.html(parsed_template('servo'))
+
+@app.route('/motor')
+def motor(request):
+    return sanic.response.html(parsed_template('motor'))
+
+@app.route('/test')
+def test(request):
+    return sanic.response.html(parsed_template('test'))
 
 @app.websocket('/rpc')
 async def rpc(request, ws):
@@ -76,31 +90,34 @@ async def rpc(request, ws):
             idle()
 
 def redirect_html(sec, url, txt):
-    return "<html><head><meta charset='utf-8'/><meta http-equiv='refresh' content='"+str(sec)+";url="+url+"'/></head><body>"+txt+"</body></html>"
+    return f"""<html>
+        <head><meta charset='utf-8'/><meta http-equiv='refresh' content='{str(sec)};url={url}' /></head>
+        <body>{txt}</body>
+        </html>"""
 
 @app.route('/restart_wifi')
 def restart_wifi(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart autohotspot.service'))
-    return sanic.response.html(redirect_html(15, '/', '<p>正在重启网络...</p>'))
+    return sanic.response.html(redirect_html(15, '/', """<p>{}...</p>""".format(_("Restarting network"))))
 
 @app.route('/restart_server')
 def restart_server(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart cozmars.service'))
-    return sanic.response.html(redirect_html(15, '/', '<p>正在重启服务...</p>'))
+    return sanic.response.html(redirect_html(15, '/', """<p>{}...</p>""".format(_("Restarting service"))))
 
 @app.route('/poweroff')
 def poweroff(request):
     cozmars_rpc_server.screen.image(util.poweroff_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo poweroff'))
-    return sanic.response.html('<p>正在关机...</p><p>软件关机后请等待 Cozmars 机器人头部内的电源灯熄灭后再按下侧面的电源键</p>')
+    return sanic.response.html("""<p>{}<br> {}</p>""".format(_("Shutting down"), _("Please wait for the power light in the head of the Cozmars robot to go out before pressing the power key on the side.")))
 
 @app.route('/reboot')
 def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
-    return sanic.response.html(redirect_html(60, '/', '<p>正在重启...</p><p>大约需要一分钟</p>'))
+    return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format({_("Restarting")}, _("This takes about a minute"))))
 
 @app.route('/about')
 def serial(request):
@@ -111,8 +128,7 @@ def wifi(request):
     from subprocess import check_output
     s = check_output(r"sudo grep ssid\|psk /etc/wpa_supplicant/wpa_supplicant.conf".split(' ')).decode()
     ssid, pw = [a[a.find('"')+1:a.rfind('"')] for a in s.split('\n')[:2]]
-    with open(util.static('wifi.tmpl')) as file:
-        return sanic.response.html(file.read().format(ssid=ssid, hostname=util.HOSTNAME, serial=util.SERIAL))
+    return sanic.response.html(parsed_template("wifi", ssid=ssid, hostname=util.HOSTNAME, serial=util.SERIAL, ip="10.3.141.1"))
 
 @app.route('/save_wifi', methods=['POST', 'GET'])
 def save_wifi(request):
@@ -120,21 +136,21 @@ def save_wifi(request):
     try:
         ssid, pw = [(request.form or request.args)[a][0] for a in ['ssid', 'pass']]
         check_call(f'sudo sh {util.pkg("save_wifi.sh")} {ssid} {pw}'.split(' '))
-        return sanic.response.html("<p style='color:green'>wifi设置已保存，重启网络后生效<form action='restart_wifi'><input type='submit' value='重启网络'></form></p>")
+        return sanic.response.html("""<p style='color:green'>
+            {}
+            <form action='/restart_wifi'>
+            <input type='submit' value='{}'>
+            </form></p>""".format(_("Wifi settings saved, will be effective after restarting the network"), _("Restart Network")))
     except Exception as e:
-        return sanic.response.html(f"<p stype='color:red'>wifi设置失败<br><br>{str(e)}</p>")
-
-@app.route('/')
-def index(request):
-    with open(util.static('index.tmpl')) as file:
-        return sanic.response.html(file.read().format(version=__version__, mac=util.MAC, serial=util.SERIAL, ip=util.IP))
+        return sanic.response.html("""<p stype='color:red'>{}<br><br>{}</p>""".format(_("Wifi setup failed"), str(e)))
 
 @app.route('/upgrade')
 def upgrade(request):
 
     async def streaming_fn(response):
-        await response.write('<p>正在检查更新，请稍等...</p>')
-        proc = await asyncio.create_subprocess_shell('sudo python3 -m pip install rcute-cozmars-server==1.* -U', stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        await response.write("""<p>{}...</p>""".format(_("Checking for updates, please wait")))
+        update_cmd = util.CONF['update']['cmd']
+        proc = await asyncio.create_subprocess_shell(update_cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
 
         err_flag = False
         async def write(stream, format, err):
@@ -151,9 +167,11 @@ def upgrade(request):
         await asyncio.wait([write(proc.stdout, '%s<br>', False),
                             write(proc.stderr, '<span style="color:red">%s</span><br>', True)])
         if err_flag:
-            await response.write("<p style='color:red'>********* 更新失败 *********</p>")
+            await response.write("""<p style='color:red'>********* {} *********</p>""".format(_("Update failed")))
         else:
-            await response.write("<p style='color:green'>********* 更新完成，重启服务后生效 *********<br><form action='restart_server'><input type='submit' value='重启服务'></form></p>")
+            await response.write("""<p style='color:green'>********* {} *********<br>
+                <form action='/restart_server'><input type='submit' value='{}'></form>
+                </p>""".format(_("Update complete, effective after restarting the service"), _("Restart Server")))
     return sanic.response.stream(streaming_fn, content_type='text/html; charset=utf-8')
 
 # if __name__ == "__main__":

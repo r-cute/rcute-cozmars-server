@@ -1,0 +1,58 @@
+<html>
+<head>
+	<title>{_("Cozmars")}</title>
+	<style type="text/css">
+		button, form {{ margin: 10px; }}
+		form {{ display: inline; }}
+	</style>
+</head>
+
+<body>
+	<p>{_("Cozmars is a programmable educational robot designed by R-cute, which supports Scratch and Python programming.")}</p>
+	<ul>
+		<li><a href='https://rcute-cozmars.readthedocs.io' target='blank'>{_("Python SDK documentation")}</a></li>
+		<li><a href=``>{_("Scratch3 instructions")}</a></li>
+		<li><a href=``>{_("Video")}</a></li>
+		<h2>{_("About")}</h2>
+		<table>
+			<tr>
+				<td>{_("Serial number")}</td>
+				<td>{serial}</td>
+			</tr>
+			<tr>
+				<td>{_("IP")}</td>
+				<td>{ip}</td>
+			</tr>
+			<tr>
+				<td>{_("MAC")}</td>
+				<td>{mac}</td>
+			</tr>
+			<tr>
+				<td>{_("Firmware (V1)")}</td>
+				<td>{_("Current version {version}, latest version")}<span id='latest_version'>...</span>
+					<form id='upgrade' action=' upgrade' style="display:none">
+						<input type='submit' value="{_("Update")}" />
+					</form>
+				</td>
+			</tr>
+		</table>
+		<h2>{_("Settings")}</h2>
+		<a href='wifi'><button>{_("WiFi Settings")}</button></a>
+		<a href='test'><button>{_("Functional Test")}</button></a>
+		<a href='servo'> <button>{_("Servo calibration")}</button></a><a href='motor'><button>{_("Motor calibration")}</button></a>
+		<h2>{_("Power")}</h2>
+		<form action='poweroff' onsubmit='return confirm("{_("Are you sure to shut down?")}")'><input type='submit'value='{_("Shutdown")}'></form>
+		<form action='reboot' onsubmit='return confirm("{_("Are you sure to restart?")}")'><input type='submit' value='{_("Reboot")}'>
+		</form>
+</body>
+<script>
+	function q(s) {{ return document.querySelector(s); }}
+	fetch('https://pypi.org/pypi/rcute-cozmars-server/json')
+		.then(j => j.json())
+		.then(j => Object.keys(j.releases)
+		.reduce((s, e) => {{ return (e[0] == '1') ? e : s }})).then(latest_version => {{
+			q('#latest_version').innerText = latest_version;
+			if (latest_version != '{version}') q('#upgrade').style.display = 'inline';
+		}});
+</script>
+</html>
