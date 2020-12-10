@@ -24,7 +24,7 @@
 	<script defer>
 	var stub, conf, speed=[0,0];
 	function reset_config() {{
-		return fetch('http://'+location.host+'/config').then(j=>j.json()).then(c=>{{
+		return fetch('http://'+location.host+'/conf').then(j=>j.json()).then(c=>{{
 			conf = c.motor;
 			['forward','backward'].forEach(i=>{{
 				if(conf[i][0]<1)q('input[name='+i+']').value=conf[i][0]-1;

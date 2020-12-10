@@ -2,7 +2,7 @@
 <style>button{{margin-left: 10px;margin-right: 10px;}}</style>
 <script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/rcute_cozmars_server/static/cozmars.min.js"></script>
 <script>
 function js_alter(b, src){{if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}}
 function q(d){{return document.querySelector(d)}}
@@ -27,7 +27,7 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<button onclick='robot.head.angle(-30)'>{_("Head down")}</button>
 	<button onclick='robot.lift.height(1)'>{_("Lift up")}</button>
 	<button onclick='robot.lift.height(0)'>{_("Lift down")}</button>
-<h3>{_("Motor test")}  <input id='sec' type='number' size='1' value='2'/>{_("Speed")}</h3>
+<h3>{_("Motor test")}  <input id='sec' type='number' size='1' value='2'/>{_("second")}</h3>
 	<button onclick='robot.motor.speed([-1,1],parseInt(q("#sec").value))'>{_("Turn left")}</button>
 	<button onclick='robot.motor.speed([1 ,-1],parseInt(q("#sec").value))'>{_("Turn right")}</button>
 	<button onclick='robot.motor.speed([1,1],parseInt(q("#sec ").value))'>{_("Forward")}</button>

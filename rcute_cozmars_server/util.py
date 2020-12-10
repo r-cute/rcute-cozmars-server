@@ -2,6 +2,7 @@ from os import path
 from PIL import Image, ImageFont, ImageDraw
 import gettext
 import locale
+import re
 
 try:
     loc = gettext.translation('base', localedir='locales', languages=[locale.getdefaultlocale()[0]])
@@ -17,7 +18,7 @@ def replace_gettext(match):
     return _gettext(match)
 
 def parsed_template(name, **kwargs):
-    with open(util.static("{}.html".format(name))) as file:
+    with open(static("{}.html".format(name))) as file:
         content = file.read()
         content = re.sub(r'(\{_\("(.*?)"\)\})', replace_gettext, content)
         content = content.format(**kwargs)

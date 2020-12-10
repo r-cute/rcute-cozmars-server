@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-12-10 10:02+0100\n"
+"POT-Creation-Date: 2020-12-10 15:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -159,27 +159,32 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: static/motor.html:83 static/servo.html:73
+#: static/motor.html:83 static/servo.html:82
 msgid "Reset"
 msgstr ""
 
-#: static/motor.html:84 static/servo.html:74
+#: static/motor.html:84 static/servo.html:83
 msgid "Save"
 msgstr ""
 
-#: static/servo.html:58
-msgid "Arm"
-msgstr ""
-
 #: static/servo.html:60
-msgid "Left arm"
+msgid "Head"
 msgstr ""
 
-#: static/servo.html:65 static/servo.html:71 static/test.html:15
+#: static/servo.html:65 static/servo.html:74 static/servo.html:80
+#: static/test.html:15
 msgid "Test"
 msgstr ""
 
-#: static/servo.html:66
+#: static/servo.html:67
+msgid "Arm"
+msgstr ""
+
+#: static/servo.html:69
+msgid "Left arm"
+msgstr ""
+
+#: static/servo.html:75
 msgid "Right arm"
 msgstr ""
 
@@ -228,7 +233,7 @@ msgid "Motor test"
 msgstr ""
 
 #: static/test.html:30
-msgid "Speed"
+msgid "second"
 msgstr ""
 
 #: static/test.html:31
