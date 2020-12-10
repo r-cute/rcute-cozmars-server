@@ -1,5 +1,27 @@
 from os import path
 from PIL import Image, ImageFont, ImageDraw
+import gettext
+import locale
+
+try:
+    loc = gettext.translation('base', localedir='locales', languages=[locale.getdefaultlocale()[0]])
+    loc.install()
+    _ = loc.gettext
+    _gettext = loc.gettext
+except Exception as e:
+    _ = gettext.gettext
+    _gettext = gettext.gettext
+
+def replace_gettext(match):
+    match = match.group(2)
+    return _gettext(match)
+
+def parsed_template(name, **kwargs):
+    with open(util.static("{}.html".format(name))) as file:
+        content = file.read()
+        content = re.sub(r'(\{_\("(.*?)"\)\})', replace_gettext, content)
+        content = content.format(**kwargs)
+        return content
 
 PKG = path.dirname(__file__)
 STATIC = path.join(PKG, 'static')

@@ -4,6 +4,8 @@ gpiozero
 picamera
 sounddevice
 sanic
+gettext
+locale
 wsmprpc>=1.1.1
 Pillow
 # sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi 

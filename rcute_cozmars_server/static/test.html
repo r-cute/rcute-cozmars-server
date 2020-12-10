@@ -1,30 +1,54 @@
 <html><head><title>Cozmars</title></head><body>
+<style>button{{margin-left: 10px;margin-right: 10px;}}</style>
 <script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/rcute_cozmars_server/static/cozmars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/server/static/cozmars.min.js"></script>
 <script>
-function js_alter(b, src){if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}function q(d){return document.querySelector(d)}function sleep(sec){return new Promise((r,j)=>{setTimeout(r,sec*1000)})}
-js_alter(typeof msgpack=='undefined', 'static/msgpack.min.js');
-js_alter(typeof RPCClient=='undefined', 'static/wsmprpc.client.js');
-js_alter(typeof Cozmars=='undefined', 'static/cozmars.js');
+function js_alter(b, src){{if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}}
+function q(d){{return document.querySelector(d)}}
+function sleep(sec){{return new Promise((r,j)=>{{setTimeout(r,sec*1000)}})}}
+function rand_col() {{ return Math.floor(Math.random() * 256); }}
+js_alter(typeof msgpack=='undefined','static/msgpack.min.js');
+js_alter(typeof RPCClient=='undefined','static/wsmprpc.client.js');
+js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 </script>
-<h1>测试</h1><p style='border:1px dashed gray'>该页面用于测试 Cozmars 固件及硬件是否正常，测试前应先关闭其它正在连接 Cozmars 的 Python 程序或 Scratch 网页！</p>
-<h3>传感器数据</h3>
-<table><tr><td>按钮</td><td id='button'></td></tr><tr><td>距离</td><td id='sonar'></td></tr><tr><td>红外</td><td id='ir'></td></tr></table>
-<h3>舵机测试</h3><button onclick='robot.head.angle(20)'>抬头</button><button onclick='robot.head.angle(-20)'>低头</button><button onclick='robot.lift.height(1)'>举起</button><button onclick='robot.lift.height(0)'>放下</button>
-<h3>马达测试&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id='sec' type='number' size='1' value='2'/>&nbsp;s</h3><button onclick='robot.motor.speed([-1,1],parseInt(q("#sec").value))'>左转</button><button onclick='robot.motor.speed([1,-1],parseInt(q("#sec").value))'>右转</button><button onclick='robot.motor.speed([1,1],parseInt(q("#sec").value))'>前进</button><button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>后退</button><button onclick='robot.motor.speed([0,0])'>停止</button>
-<h3>蜂鸣器测试</h3><button onclick='robot.buzzer.play("A4,A4", 120)'>嘀嘀</button>
-<h3>显示屏测试</h3><button onclick='robot.screen.fill([Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256)])'>随机颜色</button><button onclick='robot.screen.brightness(0.8,1)'>亮</button><button onclick='robot.screen.brightness(0.1,1)'>暗</button>
+<h1>{_("Test")}</h1>
+	<p style='border:1px dashed gray'>
+		{_("This page is used to test whether the Cozmars firmware and hardware are normal. You should close other Python programs or Scratch web pages that are connecting to Cozmars before testing!")}
+	</p>
+<h3>{_("Sensor data")}</h3>
+<table>
+	<tr><td>{_("Button")}</td><td id='button'></td></tr>
+	<tr><td>{_("Distance")}</td><td id='sonar'></td></tr>
+	<tr><td>{_("Infrared")}</td><td id='ir'></td></tr>
+</table>
+<h3>{_("Servo test")}</h3>
+	<button onclick='robot.head.angle(30)'>{_("Head up")}</button>
+	<button onclick='robot.head.angle(-30)'>{_("Head down")}</button>
+	<button onclick='robot.lift.height(1)'>{_("Lift up")}</button>
+	<button onclick='robot.lift.height(0)'>{_("Lift down")}</button>
+<h3>{_("Motor test")}  <input id='sec' type='number' size='1' value='2'/>{_("Speed")}</h3>
+	<button onclick='robot.motor.speed([-1,1],parseInt(q("#sec").value))'>{_("Turn left")}</button>
+	<button onclick='robot.motor.speed([1 ,-1],parseInt(q("#sec").value))'>{_("Turn right")}</button>
+	<button onclick='robot.motor.speed([1,1],parseInt(q("#sec ").value))'>{_("Forward")}</button>
+	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Back")}</button>
+	<button onclick='robot.motor.speed([0,0])'>{_("Stop")}</button>
+<h3>{_("Buzzer test")}</h3>
+	<button onclick='robot.buzzer.play("A4,A4", 120)'>{_("Beep")}</button>
+<h3>{_("Display test")}</h3>
+	<button onclick='robot.screen.fill([rand_col(),rand_col(),rand_col()])'>{_("Random color")}</button>
+	<button onclick='robot.screen.brightness(0.8,1)'>{_("Bright")}</button>
+	<button onclick='robot.screen.brightness(0.1,1)'>{_("Dark")}</button>
 <script defer>
 const button=document.getElementById('button');
 const sonar=document.getElementById('sonar');
 const ir=document.getElementById('ir');
 const robot=new Cozmars(ip=location.host);
 robot.connect().catch(alert);
-setInterval(function(){
-	ir.innerText=robot.infrared.state;
-	button.innerText=robot.button.doublePressed?"double pressed":(robot.button.held?"held":(robot.button.pressed?"pressed":'released'));
-	sonar.innerText=robot.sonar.distance;
-},300);
-</script><style>button{margin-left: 10px;margin-right: 10px;}</style>
+setInterval(function(){{
+ir.innerText=robot.infrared.state;
+button.innerText=robot.button.doublePressed?"double_pressed":(robot.button.held?"held":(robot.button.pressed?"pressed":'released'));
+sonar.innerText=robot.sonar.distance;
+}},300);
+</script>
 </body></html>
