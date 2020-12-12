@@ -5,13 +5,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-12-10 15:25+0100\n"
+"POT-Creation-Date: 2020-12-12 21:41+CST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: ENCODING\n"
 "Generated-By: pygettext.py 1.5\n"
 
 
@@ -24,7 +24,7 @@ msgid "Restarting service"
 msgstr ""
 
 #: __main__.py:113
-msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power key on the side."
+msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side."
 msgstr ""
 
 #: __main__.py:113
@@ -32,7 +32,7 @@ msgid "Shutting down"
 msgstr ""
 
 #: __main__.py:120
-msgid "Restarting"
+msgid "Rebooting"
 msgstr ""
 
 #: __main__.py:120
@@ -52,7 +52,7 @@ msgid "Wifi setup failed"
 msgstr ""
 
 #: __main__.py:151
-msgid "Checking for updates, please wait"
+msgid "Checking for upgrade, please wait"
 msgstr ""
 
 #: __main__.py:170
@@ -60,19 +60,15 @@ msgid "Update failed"
 msgstr ""
 
 #: __main__.py:174
-msgid "Restart Server"
+msgid "Restart service"
 msgstr ""
 
 #: __main__.py:174
-msgid "Update complete, effective after restarting the service"
-msgstr ""
-
-#: static/index.html:3 static/wifi.html:1
-msgid "Cozmars"
+msgid "Upgrade complete, will be effective after restarting service"
 msgstr ""
 
 #: static/index.html:11
-msgid "Cozmars is a programmable educational robot designed by R-cute, which supports Scratch and Python programming."
+msgid "Cozmars is a programmable educational robot designed by R-Cute, which supports Scratch and Python programming."
 msgstr ""
 
 #: static/index.html:13
@@ -136,148 +132,152 @@ msgid "Power"
 msgstr ""
 
 #: static/motor.html:65
-msgid "It has been debugged before leaving the factory, and generally does not need to be calibrated."
-msgstr ""
-
-#: static/motor.html:66
 msgid "Calibration is only needed when forward or backward cannot go straight."
 msgstr ""
 
-#: static/motor.html:69
+#: static/motor.html:68 static/servo.html:60
 msgid "Warning: After clicking Save, the previous settings cannot be restored!"
 msgstr ""
 
-#: static/motor.html:72 static/motor.html:74 static/test.html:33
+#: static/motor.html:71 static/motor.html:73 static/test.html:34
 msgid "Forward"
 msgstr ""
 
-#: static/motor.html:75 static/motor.html:80 static/test.html:35
+#: static/motor.html:74 static/motor.html:79 static/test.html:36
 msgid "Stop"
 msgstr ""
 
-#: static/motor.html:77 static/motor.html:79 static/test.html:34
-msgid "Back"
+#: static/motor.html:76 static/motor.html:78 static/test.html:35
+msgid "Backward"
 msgstr ""
 
-#: static/motor.html:83 static/servo.html:82
+#: static/motor.html:82 static/servo.html:83
 msgid "Reset"
 msgstr ""
 
-#: static/motor.html:84 static/servo.html:83
+#: static/motor.html:83 static/servo.html:84
 msgid "Save"
 msgstr ""
 
-#: static/servo.html:60
+#: static/servo.html:59
+msgid "Calibration is only needed when head or lift cannot reach specified position, or both arms do not move in sync."
+msgstr ""
+
+#: static/servo.html:61
 msgid "Head"
 msgstr ""
 
-#: static/servo.html:65 static/servo.html:74 static/servo.html:80
+#: static/servo.html:66 static/servo.html:75 static/servo.html:81
 #: static/test.html:15
 msgid "Test"
 msgstr ""
 
-#: static/servo.html:67
+#: static/servo.html:68
 msgid "Arm"
 msgstr ""
 
-#: static/servo.html:69
+#: static/servo.html:70
 msgid "Left arm"
 msgstr ""
 
-#: static/servo.html:75
+#: static/servo.html:76
 msgid "Right arm"
 msgstr ""
 
 #: static/test.html:17
-msgid "This page is used to test whether the Cozmars firmware and hardware are normal. You should close other Python programs or Scratch web pages that are connecting to Cozmars before testing!"
+msgid "This page is used to test whether the Cozmars firmware and hardware are working properly."
 msgstr ""
 
-#: static/test.html:19
+#: static/test.html:18
+msgid "You should close other programs or pages that are connecting to Cozmars first!"
+msgstr ""
+
+#: static/test.html:20
 msgid "Sensor data"
 msgstr ""
 
-#: static/test.html:21
+#: static/test.html:22
 msgid "Button"
 msgstr ""
 
-#: static/test.html:22
+#: static/test.html:23
 msgid "Distance"
 msgstr ""
 
-#: static/test.html:23
+#: static/test.html:24
 msgid "Infrared"
 msgstr ""
 
-#: static/test.html:25
+#: static/test.html:26
 msgid "Servo test"
 msgstr ""
 
-#: static/test.html:26
+#: static/test.html:27
 msgid "Head up"
 msgstr ""
 
-#: static/test.html:27
+#: static/test.html:28
 msgid "Head down"
 msgstr ""
 
-#: static/test.html:28
+#: static/test.html:29
 msgid "Lift up"
 msgstr ""
 
-#: static/test.html:29
+#: static/test.html:30
 msgid "Lift down"
 msgstr ""
 
-#: static/test.html:30
+#: static/test.html:31
 msgid "Motor test"
 msgstr ""
 
-#: static/test.html:30
+#: static/test.html:31
 msgid "second"
 msgstr ""
 
-#: static/test.html:31
+#: static/test.html:32
 msgid "Turn left"
 msgstr ""
 
-#: static/test.html:32
+#: static/test.html:33
 msgid "Turn right"
 msgstr ""
 
-#: static/test.html:36
+#: static/test.html:37
 msgid "Buzzer test"
 msgstr ""
 
-#: static/test.html:37
+#: static/test.html:38
 msgid "Beep"
 msgstr ""
 
-#: static/test.html:38
+#: static/test.html:39
 msgid "Display test"
 msgstr ""
 
-#: static/test.html:39
+#: static/test.html:40
 msgid "Random color"
 msgstr ""
 
-#: static/test.html:40
+#: static/test.html:41
 msgid "Bright"
 msgstr ""
 
-#: static/test.html:41
-msgid "Dark"
+#: static/test.html:42
+msgid "Dim"
 msgstr ""
 
 #: static/wifi.html:5
-msgid "Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restarting."
+msgid "Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restart."
 msgstr ""
 
 #: static/wifi.html:6
-msgid "When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: "
+msgid "When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: {hostname}, and password is {serial}{serial}"
 msgstr ""
 
 #: static/wifi.html:7
-msgid "The password is {serial}{serial}. After connecting, log in to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up."
+msgid "when connected, login to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up."
 msgstr ""
 
 #: static/wifi.html:10
@@ -292,3 +292,24 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
+# below are manually added:
+msgid "Hide"
+msgstr ""
+
+msgid "Upgrade"
+msgstr ""
+
+msgid "Shutdown"
+msgstr ""
+
+msgid "Reboot"
+msgstr ""
+
+msgid "Are you sure to reboot?"
+msgstr ""
+
+msgid "Are you sure to shut down?"
+msgstr ""
+
+msgid "The privious settings cannot be restored after saving, are you sure you want to save it?"
+msgstr ""

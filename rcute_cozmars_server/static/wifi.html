@@ -1,10 +1,10 @@
-<html><head><title>{_("Cozmars")}</title></head>
+<html><head><title>Cozmars</title></head>
 <body>
     <h1>{_("WiFi Settings")}</h1>
     <p style='border:1px dashed gray'>
-        {_("Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restarting.")}<br>
-        {_("When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: ")} {hostname}<br> 
-        {_("The password is {serial}{serial}. After connecting, log in to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up.")}
+        {_("Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restart.")}<br>
+        {_("When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: {hostname}, and password is {serial}{serial}")}<br> 
+        {_("when connected, login to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up.")}
     </p>
     <form action='save_wifi' method='post' onsubmit='return check()'>
         {_("WiFi Name")}:<input type='text' name='ssid' value='{ssid}'><br>

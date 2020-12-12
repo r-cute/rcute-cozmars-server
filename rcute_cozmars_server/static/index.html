@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>{_("Cozmars")}</title>
+	<title>Cozmars</title>
 	<style type="text/css">
 		button, form {{ margin: 10px; }}
 		form {{ display: inline; }}
@@ -8,7 +8,7 @@
 </head>
 
 <body>
-	<p>{_("Cozmars is a programmable educational robot designed by R-cute, which supports Scratch and Python programming.")}</p>
+	<p>{_("Cozmars is a programmable educational robot designed by R-Cute, which supports Scratch and Python programming.")}</p>
 	<ul>
 		<li><a href='https://rcute-cozmars.readthedocs.io' target='blank'>{_("Python SDK documentation")}</a></li>
 		<!-- <li><a href=``>{_("Scratch3 instructions")}</a></li>
@@ -29,9 +29,9 @@
 			</tr>
 			<tr>
 				<td>{_("Firmware (V1)")}</td>
-				<td>{_("Current version {version}, latest version")}<span id='latest_version'>...</span>
+				<td>{_("Current version {version}, latest version")} <span id='latest_version'>...</span>
 					<form id='upgrade' action=' upgrade' style="display:none">
-						<input type='submit' value="{_("Update")}" />
+						<input type='submit' value='{_("Upgrade")}' />
 					</form>
 				</td>
 			</tr>
@@ -42,7 +42,7 @@
 		<a href='servo'> <button>{_("Servo calibration")}</button></a><a href='motor'><button>{_("Motor calibration")}</button></a>
 		<h2>{_("Power")}</h2>
 		<form action='poweroff' onsubmit='return confirm("{_("Are you sure to shut down?")}")'><input type='submit'value='{_("Shutdown")}'></form>
-		<form action='reboot' onsubmit='return confirm("{_("Are you sure to restart?")}")'><input type='submit' value='{_("Reboot")}'>
+		<form action='reboot' onsubmit='return confirm("{_("Are you sure to reboot?")}")'><input type='submit' value='{_("Reboot")}'>
 		</form>
 </body>
 <script>

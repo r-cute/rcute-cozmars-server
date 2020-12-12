@@ -30,7 +30,7 @@
 		}});
 	}}
 	function save_config() {{
-		if(confirm('{_("The previous settings cannot be restored after saving, are you sure you want to save it?")}')) {{
+		if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save it?")}')) {{
 			stub.rpc('save_conf',[])
 		}}
 	}}
@@ -49,16 +49,17 @@
 	(async()=>{{
 		var ws = new WebSocket("ws://"+location.host+"/rpc");
 		if('-1'==await new Promise((r,j)=>{{ws.onmessage=e=>{{r(e.data)}}}})){{
-			alert('{_("Please close other programs or pages that are connecting to Cozmars first")}');
+			alert('{_("You should close other programs or pages that are connecting to Cozmars first!")}');
 			return;
 		}}
 		stub = new RPCClient(ws);
 	}})();
 </script>
-<h1>Servo calibration</h1>
-  <p><!-- The steering gear has been debugged before leaving the factory, and generally does not need to be calibrated<br> -->Only when the steering gear cannot reach the specified position in the <a href='test'>test</a> Calibration is required</p><p style='background-color:yellow;text-align:left;color:red;padding:10px;'>Warning: After clicking save, the original settings cannot be restored! </p>
+<h1>{_("Servo calibration")}</h1>
+  <p>{_("Calibration is only needed when head or lift cannot reach specified position, or both arms do not move in sync.")}</p>
+  <p style='background-color:yellow;text-align:left;color:red;padding:10px;'>{_("Warning: After clicking Save, the previous settings cannot be restored!")}</p>
 <h2>{_("Head")}&nbsp;&nbsp;&nbsp;&nbsp;<span id='head_val'>0°</span></h2>
-  <div>-20°<input class='bottom' type='range' max="20" min='-20' value="0" step='5' name='head' oninput='set_servo(" head")'>20°</div>
+  <div>-20°<input class='bottom' type='range' max="20" min='-20' value="0" step='5' name='head' oninput='set_servo("head")'>20°</div>
   <div>
 	  <input class='left' type='number' size="1" name='head_min' onchange="cal_servo('head')">
 	  <input class='right' type='number' size= "1" name='head_max' onchange="cal_servo('head')"></div>

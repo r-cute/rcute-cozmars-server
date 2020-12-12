@@ -100,7 +100,7 @@ def restart_wifi(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart autohotspot.service'))
     return sanic.response.html(redirect_html(15, '/', """<p>{}...</p>""".format(_("Restarting network"))))
 
-@app.route('/restart_server')
+@app.route('/restart_service')
 def restart_server(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart cozmars.service'))
     return sanic.response.html(redirect_html(15, '/', """<p>{}...</p>""".format(_("Restarting service"))))
@@ -110,14 +110,14 @@ def poweroff(request):
     cozmars_rpc_server.screen.image(util.poweroff_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo poweroff'))
-    return sanic.response.html("""<p>{}<br> {}</p>""".format(_("Shutting down"), _("Please wait for the power light in the head of the Cozmars robot to go out before pressing the power key on the side.")))
+    return sanic.response.html("""<p>{}<br> {}</p>""".format(_("Shutting down"), _("Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side.")))
 
 @app.route('/reboot')
 def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
-    return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format({_("Restarting")}, _("This takes about a minute"))))
+    return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format({_("Rebooting")}, _("This takes about a minute"))))
 
 @app.route('/about')
 def serial(request):
@@ -148,7 +148,7 @@ def save_wifi(request):
 def upgrade(request):
 
     async def streaming_fn(response):
-        await response.write("""<p>{}...</p>""".format(_("Checking for updates, please wait")))
+        await response.write("""<p>{}...</p>""".format(_("Checking for upgrade, please wait")))
         update_cmd = util.CONF['update']['cmd']
         proc = await asyncio.create_subprocess_shell(update_cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
 
@@ -170,8 +170,8 @@ def upgrade(request):
             await response.write("""<p style='color:red'>********* {} *********</p>""".format(_("Update failed")))
         else:
             await response.write("""<p style='color:green'>********* {} *********<br>
-                <form action='/restart_server'><input type='submit' value='{}'></form>
-                </p>""".format(_("Update complete, effective after restarting the service"), _("Restart Server")))
+                <form action='/restart_service'><input type='submit' value='{}'></form>
+                </p>""".format(_("Upgrade complete, will be effective after restarting service"), _("Restart service")))
     return sanic.response.stream(streaming_fn, content_type='text/html; charset=utf-8')
 
 # if __name__ == "__main__":

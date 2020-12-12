@@ -5,13 +5,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-12-10 15:25+0100\n"
+"POT-Creation-Date: 2020-12-12 21:41+CST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: ENCODING\n"
 "Generated-By: pygettext.py 1.5\n"
 
 
@@ -24,7 +24,7 @@ msgid "Restarting service"
 msgstr "正在重启服务"
 
 #: __main__.py:113
-msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power key on the side."
+msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side."
 msgstr "软件关机后请等待 Cozmars 机器人头部内的电源灯熄灭后再按下侧面的电源键"
 
 #: __main__.py:113
@@ -32,7 +32,7 @@ msgid "Shutting down"
 msgstr "正在关机"
 
 #: __main__.py:120
-msgid "Restarting"
+msgid "Rebooting"
 msgstr "正在重启"
 
 #: __main__.py:120
@@ -52,28 +52,24 @@ msgid "Wifi setup failed"
 msgstr "Wifi 设置失败"
 
 #: __main__.py:151
-msgid "Checking for updates, please wait"
+msgid "Checking for upgrade, please wait"
 msgstr "正在检查更新，请稍等"
 
 #: __main__.py:170
 msgid "Update failed"
-msgstr "更新失败"
+msgstr "更新失敗"
 
 #: __main__.py:174
-msgid "Restart Server"
+msgid "Restart service"
 msgstr "重启服务"
 
 #: __main__.py:174
-msgid "Update complete, effective after restarting the service"
+msgid "Upgrade complete, will be effective after restarting service"
 msgstr "更新完成，重启服务后生效"
 
-#: static/index.html:3 static/wifi.html:1
-msgid "Cozmars"
-msgstr "Cozmars"
-
 #: static/index.html:11
-msgid "Cozmars is a programmable educational robot designed by R-cute, which supports Scratch and Python programming."
-msgstr "Cozmars 是由 R-cute 设计的可编程教育机器人，支持 Scratch 和 Python 编程"
+msgid "Cozmars is a programmable educational robot designed by R-Cute, which supports Scratch and Python programming."
+msgstr "Cozmars 是由 R-Cute 设计的可编程教育机器人，支持 Scratch 和 Python 编程"
 
 #: static/index.html:13
 msgid "Python SDK documentation"
@@ -136,159 +132,184 @@ msgid "Power"
 msgstr "电源"
 
 #: static/motor.html:65
-msgid "It has been debugged before leaving the factory, and generally does not need to be calibrated."
-msgstr "出厂时已经调试好，一般不需要再进行校准"
-
-#: static/motor.html:66
 msgid "Calibration is only needed when forward or backward cannot go straight."
 msgstr "只有在前进或后退无法走直线时才需要校准"
 
-#: static/motor.html:69
+#: static/motor.html:68 static/servo.html:60
 msgid "Warning: After clicking Save, the previous settings cannot be restored!"
-msgstr "警告: 点击保存后将无法恢复出厂设置！"
+msgstr "警告: 点击保存后将无法恢复原设置！"
 
-#: static/motor.html:72 static/motor.html:74 static/test.html:33
+#: static/motor.html:71 static/motor.html:73 static/test.html:34
 msgid "Forward"
 msgstr "前进"
 
-#: static/motor.html:75 static/motor.html:80 static/test.html:35
+#: static/motor.html:74 static/motor.html:79 static/test.html:36
 msgid "Stop"
 msgstr "停止"
 
-#: static/motor.html:77 static/motor.html:79 static/test.html:34
-msgid "Back"
+#: static/motor.html:76 static/motor.html:78 static/test.html:35
+msgid "Backward"
 msgstr "后退"
 
-#: static/motor.html:83 static/servo.html:82
+#: static/motor.html:82 static/servo.html:83
 msgid "Reset"
 msgstr "重置"
 
-#: static/motor.html:84 static/servo.html:83
+#: static/motor.html:83 static/servo.html:84
 msgid "Save"
 msgstr "保存"
 
-#: static/servo.html:60
+#: static/servo.html:59
+msgid "Calibration is only needed when head or lift cannot reach specified position, or both arms do not move in sync."
+msgstr "只有在头部或手臂无法转动到指定位置，或两边手臂不同步时才需要校准"
+
+#: static/servo.html:61
 msgid "Head"
 msgstr "头部"
 
-#: static/servo.html:65 static/servo.html:74 static/servo.html:80
+#: static/servo.html:66 static/servo.html:75 static/servo.html:81
 #: static/test.html:15
 msgid "Test"
 msgstr "测试"
 
-#: static/servo.html:67
+#: static/servo.html:68
 msgid "Arm"
 msgstr "手臂"
 
-#: static/servo.html:69
+#: static/servo.html:70
 msgid "Left arm"
 msgstr "左臂"
 
-#: static/servo.html:75
+#: static/servo.html:76
 msgid "Right arm"
 msgstr "右臂"
 
 #: static/test.html:17
-msgid "This page is used to test whether the Cozmars firmware and hardware are normal. You should close other Python programs or Scratch web pages that are connecting to Cozmars before testing!"
-msgstr "该页面用于测试 Cozmars 固件及硬件是否正常，测试前应先关闭其它正在连接 Cozmars 的 Python 程序或 Scratch 网页！"
+msgid "This page is used to test whether the Cozmars firmware and hardware are working properly."
+msgstr "该页面用于测试 Cozmars 固件及硬件是否正常"
 
-#: static/test.html:19
+#: static/test.html:18
+msgid "You should close other programs or pages that are connecting to Cozmars first!"
+msgstr "请先关闭其他正在连接 Cozmars 的程序或页面!"
+
+#: static/test.html:20
 msgid "Sensor data"
 msgstr "传感器数据"
 
-#: static/test.html:21
+#: static/test.html:22
 msgid "Button"
 msgstr "按钮"
 
-#: static/test.html:22
+#: static/test.html:23
 msgid "Distance"
 msgstr "距离"
 
-#: static/test.html:23
+#: static/test.html:24
 msgid "Infrared"
 msgstr "红外"
 
-#: static/test.html:25
+#: static/test.html:26
 msgid "Servo test"
 msgstr "舵机测试"
 
-#: static/test.html:26
+#: static/test.html:27
 msgid "Head up"
 msgstr "抬头"
 
-#: static/test.html:27
+#: static/test.html:28
 msgid "Head down"
 msgstr "低头"
 
-#: static/test.html:28
+#: static/test.html:29
 msgid "Lift up"
 msgstr "举起"
 
-#: static/test.html:29
+#: static/test.html:30
 msgid "Lift down"
 msgstr "放下"
 
-#: static/test.html:30
+#: static/test.html:31
 msgid "Motor test"
 msgstr "马达测试"
 
-#: static/test.html:30
-msgid "second"
-msgstr "s"
-
 #: static/test.html:31
+msgid "second"
+msgstr "秒"
+
+#: static/test.html:32
 msgid "Turn left"
 msgstr "左转"
 
-#: static/test.html:32
+#: static/test.html:33
 msgid "Turn right"
 msgstr "右转"
 
-#: static/test.html:36
+#: static/test.html:37
 msgid "Buzzer test"
 msgstr "蜂鸣器测试"
 
-#: static/test.html:37
+#: static/test.html:38
 msgid "Beep"
 msgstr "嘀嘀"
 
-#: static/test.html:38
+#: static/test.html:39
 msgid "Display test"
 msgstr "显示屏测试"
 
-#: static/test.html:39
+#: static/test.html:40
 msgid "Random color"
 msgstr "随机颜色"
 
-#: static/test.html:40
+#: static/test.html:41
 msgid "Bright"
 msgstr "亮"
 
-#: static/test.html:41
-msgid "Dark"
+#: static/test.html:42
+msgid "Dim"
 msgstr "暗"
 
 #: static/wifi.html:5
-msgid "Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restarting."
+msgid "Set the wifi in your home or office, and Cozmars will automatically connect to the wifi after restart."
 msgstr "设置您家里或办公室的 wifi，重启后 Cozmars 会自动连接该 wifi"
 
 #: static/wifi.html:6
-msgid "When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: "
-msgstr "在首次使用或环境 wifi 无法连接时，可以搜索 Cozmars 自带的 wifi 热点"
+msgid "When you use it for the first time or when the environment wifi cannot be connected, you can search for the wifi hotspot that comes with Cozmars: {hostname}, and password is {serial}{serial}"
+msgstr "在首次使用或环境 wifi 无法连接时，可以搜索 Cozmars 自带的 wifi 热点 {hostname}, 密码是 {serial}{serial}"
 
 #: static/wifi.html:7
-msgid "The password is {serial}{serial}. After connecting, log in to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up."
-msgstr "密码为 {serial}{serial}，连接后登陆 <a href='http://{ip}/wifi'>http://{ip}/wifi</a> 进行设置"
+msgid "when connected, login to <a href='http://{ip}/wifi'>http://{ip}/wifi</a> to set up."
+msgstr "连接后登陆 <a href='http://{ip}/wifi'>http://{ip}/wifi</a> 进行设置."
 
 #: static/wifi.html:10
 msgid "WiFi Name"
-msgstr "wifi 名称"
+msgstr "Wifi 名字"
 
 #: static/wifi.html:11
 msgid "WiFi Password"
-msgstr "wifi 密码"
+msgstr "Wifi 密码"
 
 #: static/wifi.html:12
 msgid "Show"
 msgstr "显示"
 
+# below are manually added:
+msgid "Hide"
+msgstr "隐藏"
+
+msgid "Upgrade"
+msgstr "更新"
+
+msgid "Shutdown"
+msgstr "关机"
+
+msgid "Reboot"
+msgstr "重启"
+
+msgid "Are you sure to reboot?"
+msgstr "确定要重启吗？"
+
+msgid "Are you sure to shut down?"
+msgstr "确定要关机吗？"
+
+msgid "The privious settings cannot be restored after saving, are you sure you want to save it?"
+msgstr "保存后将不能恢复原设置，确定要保存？"

@@ -51,6 +51,5 @@ This project is open sourced for educational purpose, Commercial usage is prohib
 
 ## Related stuff
 
-* 3d model: https://www.thingiverse.com/thing:4657644
+* 3d model and more detailed build instructions: https://www.thingiverse.com/thing:4657644
 * python sdk: https://github.com/hyansuper/rcute-cozmars
-

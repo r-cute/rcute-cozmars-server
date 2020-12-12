@@ -54,7 +54,7 @@
 	(async()=>{{
 		var ws = new WebSocket("ws://"+location.host+"/rpc");
 		if('-1'==await new Promise((r,j)=>{{ws.onmessage=e=>{{r(e.data)}}}})){{
-			alert('{_("Please close other programs or pages that are connecting to Cozmars first")}');
+			alert('{_("You should close other programs or pages that are connecting to Cozmars first!")}');
 			return;
 		}}
 		stub = new RPCClient(ws);
@@ -62,7 +62,6 @@
 	</script>
 	<h1>{_("Motor calibration")}</h1>
 	<p>
-		<!-- {_("It has been debugged before leaving the factory, and generally does not need to be calibrated.")}<br> -->
 		{_("Calibration is only needed when forward or backward cannot go straight.")}
 	</p>
 	<p style='background-color:yellow;text-align:left ;color:red;padding:10px;'>
@@ -74,12 +73,12 @@
 	<button style='margin-right:100px;' onclick="set_speed(1,1)">{_("Forward")}</button>
 	<button onclick="set_speed(0,0)">{_("Stop")}</button>
 	<br><br><br><br>
-	<h3>{_("Back")}&nbsp;&nbsp;&nbsp;<span id='backward'></span></h3>
+	<h3>{_("Backward")}&nbsp;&nbsp;&nbsp;<span id='backward'></span></h3>
 	<input type='range' max="0.3" min='-0.3' value="0" step='0.05' name='backward' oninput='cal_motor("backward")'><br><br>
-	<button style='margin-right:100px;' onclick="set_speed(-1,-1)">{_("Back")}</button>
+	<button style='margin-right:100px;' onclick="set_speed(-1,-1)">{_("Backward")}</button>
 	<button onclick="set_speed(0,0)">{_("Stop")}</button>
 	
 	<br><br><br><br><br>
 	<button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">{_("Reset")}</button>
-	<button onclick="if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save?")}'))stub.rpc('save_config',[])">{_("Save")}</button>
+	<button onclick="if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save it?")}'))stub.rpc('save_config',[])">{_("Save")}</button>
 	</body></html>

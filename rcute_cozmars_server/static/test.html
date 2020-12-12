@@ -14,7 +14,8 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 </script>
 <h1>{_("Test")}</h1>
 	<p style='border:1px dashed gray'>
-		{_("This page is used to test whether the Cozmars firmware and hardware are normal. You should close other Python programs or Scratch web pages that are connecting to Cozmars before testing!")}
+		{_("This page is used to test whether the Cozmars firmware and hardware are working properly.")}<br>
+		{_("You should close other programs or pages that are connecting to Cozmars first!")}
 	</p>
 <h3>{_("Sensor data")}</h3>
 <table>
@@ -31,14 +32,14 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<button onclick='robot.motor.speed([-1,1],parseInt(q("#sec").value))'>{_("Turn left")}</button>
 	<button onclick='robot.motor.speed([1 ,-1],parseInt(q("#sec").value))'>{_("Turn right")}</button>
 	<button onclick='robot.motor.speed([1,1],parseInt(q("#sec ").value))'>{_("Forward")}</button>
-	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Back")}</button>
+	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Backward")}</button>
 	<button onclick='robot.motor.speed([0,0])'>{_("Stop")}</button>
 <h3>{_("Buzzer test")}</h3>
 	<button onclick='robot.buzzer.play("A4,A4", 120)'>{_("Beep")}</button>
 <h3>{_("Display test")}</h3>
 	<button onclick='robot.screen.fill([rand_col(),rand_col(),rand_col()])'>{_("Random color")}</button>
 	<button onclick='robot.screen.brightness(0.8,1)'>{_("Bright")}</button>
-	<button onclick='robot.screen.brightness(0.1,1)'>{_("Dark")}</button>
+	<button onclick='robot.screen.brightness(0.1,1)'>{_("Dim")}</button>
 <script defer>
 const button=document.getElementById('button');
 const sonar=document.getElementById('sonar');
