@@ -385,6 +385,16 @@ class CozmarsServer:
             a = check_output('amixer get Boost'.split(' '))
             return int(a[a.index(b'[') + 1 : a.index(b'%')])
 
+    async def capture(self, options):
+        import picamera, io
+        with picamera.PiCamera() as cam:
+            cam.vflip = cam.hflip = True
+            buf = io.BytesIO()
+            delay = options.pop('delay', 0)
+            delay and await asyncio.sleep(delay)
+            cam.capture(buf, **options)
+            buf.seek(0)
+            return buf.read()
 
     async def camera(self, width, height, framerate):
         import picamera, io, threading, time
