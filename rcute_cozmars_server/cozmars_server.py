@@ -20,7 +20,7 @@ class CozmarsServer:
         await self.lock.acquire()
         self.lmotor = Motor(*self.conf['motor']['left'])
         self.rmotor = Motor(*self.conf['motor']['right'])
-        self.reset_servos()
+        # self.reset_servos()
         self.reset_motors()
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
@@ -95,6 +95,11 @@ class CozmarsServer:
         )
         self.servo_update_rate = self.conf['servo']['update_rate']
         self._double_press_max_interval = .5
+        self.reset_servos()
+        self._head.angle = self.rarm.fraction = self.larm.fraction = 0
+        time.sleep(.5)
+        self.relax_lift()
+        self.relax_head()
         self.cam = None
 
     @staticmethod
@@ -110,7 +115,7 @@ class CozmarsServer:
         self.rarm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['right_arm'])
         self.larm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['left_arm'])
         self._head = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['head'])
-        self._head.set_actuation_range(-30, 30)
+        self._head.set_actuation_range(-20, 20)
 
     def save_conf(self, conf_path=util.CONF):
         # only servo and motor configs are changed
