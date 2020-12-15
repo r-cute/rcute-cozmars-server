@@ -11,7 +11,6 @@ import digitalio
 import adafruit_rgb_display.st7789 as st7789
 from adafruit_rgb_display.rgb import color565
 
-from subprocess import check_call, check_output
 import json
 
 from wsmprpc import RPCStream
@@ -376,6 +375,7 @@ class CozmarsServer:
         return self.sonar.distance
 
     def microphone_volume(self, *args):
+        from subprocess import check_output
         if args:
             if 0 <= args[0] <= 100:
                 check_output(f'amixer set Boost {args[0]}%'.split(' '))
@@ -396,7 +396,7 @@ class CozmarsServer:
             buf.seek(0)
             return buf.read()
 
-    async def camera(self, width, height, framerate):
+    async def camera(self, width, height, framerate, use_video_port=True):
         import picamera, io, threading, time
         try:
             queue = RPCStream(2)
@@ -408,7 +408,7 @@ class CozmarsServer:
                     # Camera warm-up time
                     time.sleep(2)
                     stream = io.BytesIO()
-                    for _ in cam.capture_continuous(stream, 'jpeg', use_video_port=True):
+                    for _ in cam.capture_continuous(stream, 'jpeg', use_video_port=use_video_port):
                         if stop_ev.isSet():
                             break
                         stream.seek(0)
