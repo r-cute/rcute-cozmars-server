@@ -56,8 +56,8 @@ class CozmarsServer:
     async def __aexit__(self, exc_type, exc, tb):
         self.stop_all_motors()
         self.buzzer.stop()
-        for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor]:
-            a.close()
+        for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor, self.cam]:
+            a and a.close()
         self.screen_backlight.fraction = None
         self.lock.release()
 
@@ -95,6 +95,7 @@ class CozmarsServer:
         )
         self.servo_update_rate = self.conf['servo']['update_rate']
         self._double_press_max_interval = .5
+        self.cam = None
 
     @staticmethod
     def conf_servo(servokit, conf):
@@ -387,16 +388,21 @@ class CozmarsServer:
 
     async def capture(self, options):
         import picamera, io
-        with picamera.PiCamera() as cam:
-            cam.vflip = cam.hflip = True
+        if self.cam is None or self.cam.closed:
+            self.cam = picamera.PiCamera()
+            self.cam.vflip = self.cam.hflip = True
+        delay = options.pop('delay', 0)
+        standby = options.pop('standby', False)
+        try:
             buf = io.BytesIO()
-            delay = options.pop('delay', 0)
             delay and await asyncio.sleep(delay)
-            cam.capture(buf, **options)
+            self.cam.capture(buf, **options)
             buf.seek(0)
             return buf.read()
+        finally:
+            not standby and self.cam.close()
 
-    async def camera(self, width, height, framerate, use_video_port=True):
+    async def camera(self, width, height, framerate):
         import picamera, io, threading, time
         try:
             queue = RPCStream(2)
@@ -408,15 +414,14 @@ class CozmarsServer:
                     # Camera warm-up time
                     time.sleep(2)
                     stream = io.BytesIO()
-                    for _ in cam.capture_continuous(stream, 'jpeg', use_video_port=use_video_port):
+                    for _ in cam.capture_continuous(stream, 'jpeg', use_video_port=True):
                         if stop_ev.isSet():
                             break
+                        stream.truncate()
                         stream.seek(0)
                         loop.call_soon_threadsafe(queue.force_put_nowait, stream.read())
                         # queue.put_nowait(stream.read())
                         stream.seek(0)
-                        stream.truncate()
-
 
             loop = asyncio.get_running_loop()
             # threading.Thread(target=bg_run, args=[loop]).start()
