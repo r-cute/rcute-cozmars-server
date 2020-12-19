@@ -1,6 +1,6 @@
 import asyncio, time
 from collections import Iterable
-from gpiozero import Motor, Button, TonalBuzzer, LineSensor#, DistanceSensor
+from gpiozero import Motor, Button, TonalBuzzer, LineSensor, DigitalOutputDevice#, DistanceSensor
 from .distance_sensor import DistanceSensor
 from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
@@ -76,10 +76,14 @@ class CozmarsServer:
         self.event_loop = asyncio.get_running_loop()
 
         self.button = Button(self.conf['button'])
-        self.buzzer = TonalBuzzer(self.conf['buzzer'])
+        self.speaker_power = DigitalOutputDevice(self.conf['speaker'])
+        self.cam = None
+        try:
+            self.buzzer = TonalBuzzer(self.conf['buzzer'])
+        except KeyError:
+            pass
 
         self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
-
         self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
         self.screen_backlight.set_pulse_width_range(0, 100000//self.conf['servo']['freq'])
         self.screen_backlight.fraction = 0
@@ -100,7 +104,6 @@ class CozmarsServer:
         time.sleep(.5)
         self.relax_lift()
         self.relax_head()
-        self.cam = None
 
     @staticmethod
     def conf_servo(servokit, conf):
@@ -380,16 +383,19 @@ class CozmarsServer:
     def distance(self):
         return self.sonar.distance
 
-    def microphone_volume(self, *args):
+    def _volume(self, control, value):
         from subprocess import check_output
-        if args:
-            if 0 <= args[0] <= 100:
-                check_output(f'amixer set Boost {args[0]}%'.split(' '))
-            else:
-                raise ValueError('volume must be 0 ~ 100')
+        if value:
+            check_output(f'amixer set {control} {value}%'.split(' '))
         else:
-            a = check_output('amixer get Boost'.split(' '))
+            a = check_output(f'amixer get {control}'.split(' '))
             return int(a[a.index(b'[') + 1 : a.index(b'%')])
+
+    def microphone_volume(self, value=None):
+        return self._volume('Boost', value)
+
+    def speaker_volume(self, value=None):
+        return self._volume('PCM', value)
 
     async def capture(self, options):
         import picamera, io
@@ -408,7 +414,7 @@ class CozmarsServer:
             not standby and self.cam.close()
 
     async def camera(self, width, height, framerate):
-        import picamera, io, threading, time
+        import picamera, io, threading
         try:
             queue = RPCStream(2)
             stop_ev = threading.Event()
@@ -439,22 +445,49 @@ class CozmarsServer:
             stop_ev.set()
             await bg_task
 
+
+    async def speaker(self, samplerate, dtype, block_duration, *, request_stream):
+        import sounddevice as sd
+        loop = asyncio.get_running_loop()
+        done_ev = asyncio.Event()
+
+        def fcb():
+            self.speaker_power.off()
+            loop.call_soon_threadsafe(done.set)
+
+        def cb(outdata, frames, time, status):
+            # don't do time consuming await/future.result() in this callback
+            if status:
+                print(status, file=sys.stderr)
+                raise sd.CallbackAbort
+            if request_stream.empty():
+                outdata[:] = b'\x00' * len(outdata)
+            else:
+                # b = asyncio.run_coroutine_threadsafe(request_stream.get(), loop).result(block_duration*2)
+                b = request_stream.get_nowait() # is get_nowait thread safe?
+                if isinstance(b, StopAsyncIteration):
+                    raise sd.CallbackStop
+                else:
+                    outdata[:] = b
+
+        while request_stream.empty():
+            await asyncio.sleep(.1)
+        self.speaker_power.on()
+
+        with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=blocksize=int(block_duration*samplerate), finished_callback=fcb):
+            await done_ev.wait()
+
+
     async def microphone(self, samplerate=16000, dtype='int16', block_duration=.1):
         import sounddevice as sd
-        channels = 1
-        # blocksize_sec = .1
-        # bytes_per_sample = dtype[-2:]//8
-        # blocksize = int(blocksize_sec * channels * samplerate * bytes_per_sample)
-        blocksize = int(block_duration * channels * samplerate)
         loop = asyncio.get_running_loop()
         queue = RPCStream(2)
         def cb(indata, frames, time, status):
-            nonlocal queue, loop
             if status:
                 print(status, file=sys.stderr)
                 raise sd.CallbackAbort
             loop.call_soon_threadsafe(queue.force_put_nowait, bytes(indata))
 
-        with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=blocksize, channels=channels, dtype=dtype):
+        with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=blocksize=int(block_duration*samplerate), channels=1, dtype=dtype):
             while True:
                 yield await queue.get()

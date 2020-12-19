@@ -1,5 +1,6 @@
 {
   "button": 4,
+  "speaker": 21,
   "buzzer": 21,
   "ir": {
     "left": 12,
