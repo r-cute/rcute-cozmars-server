@@ -67,3 +67,10 @@ def splash_screen():
         image.save(splash)
 
     return Image.open(splash)
+
+def beep():
+    def sine(d):
+        for i in range(5):
+            yield d
+    with open(static('beep_400hz_16k_i8.raw')) as f:
+        return 16000, 'int8', .1, sine(f.read())

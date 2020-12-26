@@ -73,6 +73,8 @@ class CozmarsServer:
             self.env = json.load(ef)
 
         self.lock = asyncio.Lock()
+        self.i2s_lock = asyncio.Lock()
+        self.mic_int = False
         self.event_loop = asyncio.get_running_loop()
 
         self.button = Button(self.conf['button'])
@@ -452,16 +454,22 @@ class CozmarsServer:
         done_ev = asyncio.Event()
 
         def fcb():
+            self.mic_int = False
             self.speaker_power.off()
-            loop.call_soon_threadsafe(done.set)
+            loop.call_soon_threadsafe(done_ev.set)
 
+        zeros = None
         def cb(outdata, frames, time, status):
+            nonlocal zeros
             # don't do time consuming await/future.result() in this callback
             if status:
+                import sys
                 print(status, file=sys.stderr)
                 raise sd.CallbackAbort
             if request_stream.empty():
-                outdata[:] = b'\x00' * len(outdata)
+                if not zeros:
+                    zeros = b'\x00' * len(outdata)
+                outdata[:] = zeros
             else:
                 # b = asyncio.run_coroutine_threadsafe(request_stream.get(), loop).result(block_duration*2)
                 b = request_stream.get_nowait() # is get_nowait thread safe?
@@ -472,10 +480,12 @@ class CozmarsServer:
 
         while request_stream.empty():
             await asyncio.sleep(.1)
-        self.speaker_power.on()
 
-        with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=blocksize=int(block_duration*samplerate), finished_callback=fcb):
-            await done_ev.wait()
+        self.mic_int = True
+        async with self.i2s_lock:
+            self.speaker_power.on()
+            with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=int(block_duration*samplerate), finished_callback=fcb):
+                await done_ev.wait()
 
 
     async def microphone(self, samplerate=16000, dtype='int16', block_duration=.1):
@@ -484,10 +494,15 @@ class CozmarsServer:
         queue = RPCStream(2)
         def cb(indata, frames, time, status):
             if status:
+                import sys
                 print(status, file=sys.stderr)
                 raise sd.CallbackAbort
             loop.call_soon_threadsafe(queue.force_put_nowait, bytes(indata))
 
-        with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=blocksize=int(block_duration*samplerate), channels=1, dtype=dtype):
-            while True:
-                yield await queue.get()
+        while True:
+            async with self.i2s_lock:
+                with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=int(block_duration*samplerate), channels=1, dtype=dtype):
+                    while not self.mic_int:
+                        yield await queue.get()
+            await asyncio.sleep(.01)
+

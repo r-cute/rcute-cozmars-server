@@ -10,11 +10,12 @@ Cozmars, the open source 3d printable educational robot
 	* set your locale.
 	* memory split and set 256 for GPU (not sure if this is needed)
 * enable microphone according to [adafruit article](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
+* enable i2s amp(speaker) according to adafruit article starting from ["Create asound.conf file" section](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage#create-asound-dot-conf-file-2712971-28)
 * (optional) make rpi auto generate wifi hotspot when unable to connect to your wifi router, [this article from raspberryconnect](https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection) will help
 * install rcute-cozmars-server 
 ```
 sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi
-sudo python3 -m install rcute-cozmars-server==1.*
+sudo python3 -m install rcute-cozmars-server==2.*
 mkdir ~/.cozmars
 cp conf.json ~/.cozmars/conf.json
 cp env.json ~/.cozmars/env.json
@@ -30,7 +31,7 @@ reboot
 * 9g plastic blue servo X3
 * PCA9685 16-channel servo driver with capacitor (bend straight the 90° pins)
 * 1.14 inch color display
-* 3v 15r/m N20 motor X2
+* 3v ~~15r/m~~ 20r/m N20 motor X2
 * L298N motor driver
 * infrared sensor X2
 * ultrasonic distance sensor (3.3v compatible)
@@ -38,7 +39,9 @@ reboot
 * 112D on/off power button
 * INMP441 microphone (use 90° pins)
 * 3.7v 6400mAh battery (important: not 7.4v)
-* buzzer
+* ~~buzzer~~
+* MAX98357 amp
+* 8om, 0.5w, 36mm speaker
 * and many 10cm wires (use soft silicone wires to connect display)
 
 ![wiring](/wiring.png)

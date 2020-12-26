@@ -1,7 +1,6 @@
 {
   "button": 4,
   "speaker": 21,
-  "buzzer": 21,
   "ir": {
     "left": 12,
     "right": 16
@@ -58,6 +57,6 @@
     "threshold": 0.1
   },
   "update" : {
-    "cmd" : "sudo python3 -m pip install rcute-cozmars-server==1.* -U"
+    "cmd" : "sudo python3 -m pip install rcute-cozmars-server==2.* -U"
   }
 }
