@@ -1,6 +1,6 @@
 import asyncio, time
 from collections import Iterable
-from gpiozero import Motor, Button, TonalBuzzer, LineSensor, DigitalOutputDevice#, DistanceSensor
+from gpiozero import Motor, Button, LineSensor, DigitalOutputDevice#, TonalBuzzer, DistanceSensor
 from .distance_sensor import DistanceSensor
 from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
@@ -55,7 +55,6 @@ class CozmarsServer:
 
     async def __aexit__(self, exc_type, exc, tb):
         self.stop_all_motors()
-        self.buzzer.stop()
         for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor, self.cam]:
             a and a.close()
         self.screen_backlight.fraction = None
@@ -63,7 +62,6 @@ class CozmarsServer:
 
     def __del__(self):
         self.button.close()
-        self.buzzer.close()
 
     def __init__(self, conf_path=util.CONF, env_path=util.ENV):
         with open(conf_path) as cf:
@@ -80,10 +78,6 @@ class CozmarsServer:
         self.button = Button(self.conf['button'])
         self.speaker_power = DigitalOutputDevice(self.conf['speaker'])
         self.cam = None
-        try:
-            self.buzzer = TonalBuzzer(self.conf['buzzer'])
-        except KeyError:
-            pass
 
         self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
         self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
@@ -319,19 +313,19 @@ class CozmarsServer:
     def pixel(self, x, y, color565):
         return self.screen.pixel(x, y, color565)
 
-    def gif(self, gif, loop):
-        #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
-        raise NotImplemented
+    # def gif(self, gif, loop):
+    #     #https://github.com/adafruit/Adafruit_CircuitPython_RGB_screen/blob/master/examples/rgb_screen_pillow_animated_gif.py
+    #     raise NotImplemented
 
-    async def play(self, *, request_stream):
-        async for freq in request_stream:
-            self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
+    # async def play(self, *, request_stream):
+    #     async for freq in request_stream:
+    #         self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
 
-    async def tone(self, freq, duration=None):
-        self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
-        if duration:
-            await asyncio.sleep(duration)
-            self.buzzer.stop()
+    # async def tone(self, freq, duration=None):
+    #     self.buzzer.play(Tone.from_frequency(freq)) if freq else self.buzzer.stop()
+    #     if duration:
+    #         await asyncio.sleep(duration)
+    #         self.buzzer.stop()
 
     async def sensor_data(self, update_rate=None):
         timeout = 1/update_rate if update_rate else None
@@ -448,7 +442,7 @@ class CozmarsServer:
             await bg_task
 
 
-    async def speaker(self, samplerate, dtype, block_duration, *, request_stream):
+    async def speaker(self, samplerate, dtype, blocksize, *, request_stream):
         import sounddevice as sd
         loop = asyncio.get_running_loop()
         done_ev = asyncio.Event()
@@ -459,19 +453,17 @@ class CozmarsServer:
             loop.call_soon_threadsafe(done_ev.set)
 
         zeros = None
-        def cb(outdata, frames, time, status):
+        def cb(outdata, frames, time, status): # don't do time consuming await/future.result() in this callback
             nonlocal zeros
-            # don't do time consuming await/future.result() in this callback
-            if status:
-                import sys
-                print(status, file=sys.stderr)
-                raise sd.CallbackAbort
+            # if status:
+            #     print('[speaker]', status)
+                # loop.call_soon_threadsafe(done_ev.set)
+                # raise sd.CallbackAbort
             if request_stream.empty():
                 if not zeros:
                     zeros = b'\x00' * len(outdata)
                 outdata[:] = zeros
             else:
-                # b = asyncio.run_coroutine_threadsafe(request_stream.get(), loop).result(block_duration*2)
                 b = request_stream.get_nowait() # is get_nowait thread safe?
                 if isinstance(b, StopAsyncIteration):
                     raise sd.CallbackStop
@@ -484,24 +476,23 @@ class CozmarsServer:
         self.mic_int = True
         async with self.i2s_lock:
             self.speaker_power.on()
-            with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=int(block_duration*samplerate), finished_callback=fcb):
+            with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=blocksize, finished_callback=fcb):
                 await done_ev.wait()
 
 
-    async def microphone(self, samplerate=16000, dtype='int16', block_duration=.1):
+    async def microphone(self, samplerate, dtype, blocksize):
         import sounddevice as sd
         loop = asyncio.get_running_loop()
         queue = RPCStream(2)
         def cb(indata, frames, time, status):
-            if status:
-                import sys
-                print(status, file=sys.stderr)
-                raise sd.CallbackAbort
+            # if status:
+            #     print('[mic]', status)
+                # raise sd.CallbackAbort
             loop.call_soon_threadsafe(queue.force_put_nowait, bytes(indata))
 
         while True:
             async with self.i2s_lock:
-                with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=int(block_duration*samplerate), channels=1, dtype=dtype):
+                with sd.RawInputStream(callback=cb, samplerate=samplerate, blocksize=blocksize, channels=1, dtype=dtype):
                     while not self.mic_int:
                         yield await queue.get()
             await asyncio.sleep(.01)

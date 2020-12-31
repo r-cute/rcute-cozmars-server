@@ -1,8 +1,7 @@
 from os import path
 from PIL import Image, ImageFont, ImageDraw
-import gettext
-import locale
-import re
+import gettext, locale, re
+import asyncio
 
 PKG = path.dirname(__file__)
 STATIC = path.join(PKG, 'static')
@@ -68,9 +67,10 @@ def splash_screen():
 
     return Image.open(splash)
 
-def beep():
-    def sine(d):
-        for i in range(5):
-            yield d
-    with open(static('beep_400hz_16k_i8.raw')) as f:
-        return 16000, 'int8', .1, sine(f.read())
+def beep(server):
+    with open(static('beep_400hz_16k_i8.raw'), 'rb') as f:
+        d = f.read()
+    q = asyncio.Queue()
+    for _ in range(5):
+        q.put_nowait(d)
+    return server.speaker(16000, 'int8', .1, request_stream=q)

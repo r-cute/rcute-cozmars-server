@@ -1,20 +1,39 @@
 # rcute-cozmars-server
 
-Cozmars, the open source 3d printable educational robot
+Firmware for Cozmars V2
 
-## Install
+## Upgrades compared to [V1](https://github.com/hyansuper/rcute-cozmars-server/tree/v1)
+
+* buzzer is replaced by a speaker
+* motors are slightly faster
+* cube has motion sensor and an rgb led
+
+## Setup
 
 * `sudo raspi-config`
 	* enable ssh, i2c, spi, camera, and disable serial.
 	* then set rpi's host name as 'rcute-cozmars-xxxx', 'xxxx' being the last 4 digit of mac address.
 	* set your locale.
-	* memory split and set 256 for GPU (not sure if this is needed)
+	* memory split and set 128 or 256 for GPU (not sure if this is needed)
 * enable microphone according to [adafruit article](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
 * enable i2s amp(speaker) according to adafruit article starting from ["Create asound.conf file" section](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage#create-asound-dot-conf-file-2712971-28)
 * (optional) make rpi auto generate wifi hotspot when unable to connect to your wifi router, [this article from raspberryconnect](https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection) will help
+* install required libs
+	1. build portaudio from latest(2020 Dec) source for [a new bug fix](https://github.com/PortAudio/portaudio/pull/344)
+		```
+		wget https://github.com/PortAudio/portaudio/archive/master.zip
+		unzip master.zip
+		cd master
+		./configure && make && sudo make install
+		```
+		in the future you can simply `apt install libportaudio2`
+	2. install other libs
+		```
+		sudo apt install libtiff5 libopenjp2-7 python3-cffi
+		```
+
 * install rcute-cozmars-server 
 ```
-sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi
 sudo python3 -m install rcute-cozmars-server==2.*
 mkdir ~/.cozmars
 cp conf.json ~/.cozmars/conf.json
@@ -38,7 +57,7 @@ reboot
 * 12mmx12mm button
 * 112D on/off power button
 * INMP441 microphone (use 90° pins)
-* 3.7v 6400mAh battery (important: not 7.4v)
+* 3.7v battery (important: not 7.4v)
 * ~~buzzer~~
 * MAX98357 amp
 * 8om, 0.5w, 36mm speaker
@@ -46,7 +65,7 @@ reboot
 
 ![wiring](/wiring.png)
 
-Some of the pins are interchangable if you configurate `~/.cozmars/conf.json` file differently. But pins of spi/i2s/i2c buses can't be changed.
+Some of the pins are interchangable if you configure `~/.cozmars/conf.json` file accordingly. But pins of spi/i2s/i2c buses can't be changed.
 
 ## License:
 
@@ -54,5 +73,5 @@ This project is open sourced for educational purpose, Commercial usage is prohib
 
 ## Related stuff
 
-* 3d model and more detailed build instructions: https://www.thingiverse.com/thing:4657644
+* 3d model(v1) and more detailed build instructions: https://www.thingiverse.com/thing:4657644
 * python sdk: https://github.com/hyansuper/rcute-cozmars

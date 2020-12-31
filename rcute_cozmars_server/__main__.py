@@ -29,7 +29,7 @@ async def delay_check_call(sec, cmd):
 async def button_poweroff():
     cozmars_rpc_server.screen.image(util.poweroff_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
-    await cozmars_rpc_server.speaker(*uitl.beep())
+    # await util.beep(cozmars_rpc_server)
     await delay_check_call(5, 'sudo poweroff')
 
 def idle():
@@ -49,7 +49,7 @@ async def before_server_start(request, loop):
     cozmars_rpc_server = CozmarsServer()
     idle()
     lightup_screen(5)
-    await cozmars_rpc_server.speaker(*util.beep())
+    # await util.beep(cozmars_rpc_server)
 
 app.static('/static', util.STATIC)
 app.static('/conf', util.CONF, content_type="application/json")
