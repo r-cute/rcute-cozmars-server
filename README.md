@@ -22,8 +22,8 @@ Firmware for Cozmars V2
 	1. build portaudio from latest(2020 Dec) source for [a new bug fix](https://github.com/PortAudio/portaudio/pull/344)
 		```
 		wget https://github.com/PortAudio/portaudio/archive/master.zip
-		unzip master.zip
-		cd master
+		unzip portaudio-master.zip
+		cd portaudio-master
 		./configure && make && sudo make install
 		```
 		in the future you can simply `apt install libportaudio2`
@@ -33,15 +33,15 @@ Firmware for Cozmars V2
 		```
 
 * install rcute-cozmars-server 
-```
-sudo python3 -m install rcute-cozmars-server==2.*
-mkdir ~/.cozmars
-cp conf.json ~/.cozmars/conf.json
-cp env.json ~/.cozmars/env.json
-sudo cp cozmars.service /etc/systemd/system
-sudo systemctl enable cozmars.service
-reboot
-```
+	```
+	sudo python3 -m install rcute-cozmars-server==2.*
+	mkdir ~/.cozmars
+	cp conf.json ~/.cozmars/conf.json
+	cp env.json ~/.cozmars/env.json
+	sudo cp cozmars.service /etc/systemd/system
+	sudo systemctl enable cozmars.service
+	reboot
+	```
 
 ## Electronic parts
 
@@ -67,7 +67,7 @@ reboot
 
 Some of the pins are interchangable if you configure `~/.cozmars/conf.json` file accordingly. But pins of spi/i2s/i2c buses can't be changed.
 
-## License:
+## License
 
 This project is open sourced for educational purpose, Commercial usage is prohibited.
 

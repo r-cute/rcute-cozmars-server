@@ -49,7 +49,7 @@ class CozmarsServer:
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
         self.screen.fill(0)
-        self.screen_backlight.fraction = .05
+        self._screen_backlight(.05)
 
         return self
 
@@ -57,7 +57,7 @@ class CozmarsServer:
         self.stop_all_motors()
         for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor, self.cam]:
             a and a.close()
-        self.screen_backlight.fraction = None
+        self._screen_backlight(None)
         self.lock.release()
 
     def __del__(self):
@@ -76,13 +76,10 @@ class CozmarsServer:
         self.event_loop = asyncio.get_running_loop()
 
         self.button = Button(self.conf['button'])
+        self._double_press_max_interval = .5
         self.speaker_power = DigitalOutputDevice(self.conf['speaker'])
         self.cam = None
 
-        self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
-        self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
-        self.screen_backlight.set_pulse_width_range(0, 100000//self.conf['servo']['freq'])
-        self.screen_backlight.fraction = 0
         spi = board.SPI()
         cs_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["cs"]}'))
         dc_pin = digitalio.DigitalInOut(getattr(board, f'D{self.conf["screen"]["dc"]}'))
@@ -93,13 +90,21 @@ class CozmarsServer:
             rst=reset_pin,
             baudrate=24000000,
         )
-        self.servo_update_rate = self.conf['servo']['update_rate']
-        self._double_press_max_interval = .5
-        self.reset_servos()
-        self._head.angle = self.rarm.fraction = self.larm.fraction = 0
-        time.sleep(.5)
-        self.relax_lift()
-        self.relax_head()
+
+        try: # the try-catch is for testing the server without servo driver connected
+            self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
+            self.screen_backlight = self.servokit.servo[self.conf['servo']['backlight']['channel']]
+            self.screen_backlight.set_pulse_width_range(0, 100000//self.conf['servo']['freq'])
+            self.screen_backlight.fraction = 0
+
+            self.servo_update_rate = self.conf['servo']['update_rate']
+            self.reset_servos()
+            self._head.angle = self.rarm.fraction = self.larm.fraction = 0
+            time.sleep(.5)
+            self.relax_lift()
+            self.relax_head()
+        except:
+            pass
 
     @staticmethod
     def conf_servo(servokit, conf):
@@ -192,8 +197,13 @@ class CozmarsServer:
 
     def stop_all_motors(self):
         self.lmotor.value = self.rmotor.value = 0
-        self.relax_lift()
-        self.relax_head()
+        if hasattr(self, 'servokit'):
+            self.relax_lift()
+            self.relax_head()
+
+    def _screen_backlight(self, b): # for testing without servokit initialized
+        if hasattr(self, 'servokit'):
+            self.screen_backlight.fraction = b
 
     async def backlight(self, *args):
         if not args:
