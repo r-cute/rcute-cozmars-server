@@ -73,4 +73,5 @@ def beep(server):
     q = asyncio.Queue()
     for _ in range(5):
         q.put_nowait(d)
-    return server.speaker(16000, 'int8', .1, request_stream=q)
+    q.put_nowait(StopAsyncIteration())
+    return server.speaker(16000, 'int8', 1600, request_stream=q)

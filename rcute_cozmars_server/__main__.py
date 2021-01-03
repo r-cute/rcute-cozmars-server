@@ -1,6 +1,5 @@
 import asyncio
 import sanic
-import re
 from subprocess import check_call
 from wsmprpc import RPCServer
 from .cozmars_server import CozmarsServer
@@ -18,7 +17,7 @@ async def dim_screen(sec):
 def lightup_screen(sec):
     global cozmars_rpc_server, dim_screen_task, server_loop
     dim_screen_task and server_loop.call_soon_threadsafe(dim_screen_task.cancel)
-    cozmars_rpc_server._screen_backlight(.1)
+    cozmars_rpc_server._screen_backlight(.02)
     dim_screen_task = asyncio.run_coroutine_threadsafe(dim_screen(5), server_loop)
 
 async def delay_check_call(sec, cmd):
@@ -28,8 +27,8 @@ async def delay_check_call(sec, cmd):
 
 async def button_poweroff():
     cozmars_rpc_server.screen.image(util.poweroff_screen())
-    cozmars_rpc_server._screen_backlight(.1)
-    # await util.beep(cozmars_rpc_server)
+    cozmars_rpc_server._screen_backlight(.02)
+    await util.beep(cozmars_rpc_server)
     await delay_check_call(5, 'sudo poweroff')
 
 def idle():
@@ -49,7 +48,7 @@ async def before_server_start(request, loop):
     cozmars_rpc_server = CozmarsServer()
     idle()
     lightup_screen(5)
-    # await util.beep(cozmars_rpc_server)
+    await util.beep(cozmars_rpc_server)
 
 app.static('/static', util.STATIC)
 app.static('/conf', util.CONF, content_type="application/json")

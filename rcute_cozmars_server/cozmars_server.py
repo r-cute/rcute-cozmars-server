@@ -1,5 +1,5 @@
 import asyncio, time
-from collections import Iterable
+from collections.abc import Iterable
 from gpiozero import Motor, Button, LineSensor#, TonalBuzzer, DistanceSensor
 from .distance_sensor import DistanceSensor
 from gpiozero.tones import Tone
@@ -107,8 +107,8 @@ class CozmarsServer:
             time.sleep(.5)
             self.relax_lift()
             self.relax_head()
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def conf_servo(servokit, conf):
