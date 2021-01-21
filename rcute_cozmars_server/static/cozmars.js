@@ -26,7 +26,6 @@ class Cozmars {
 		this.camera = new Camera(this);
 		this.lift = new Lift(this);
 		this.head = new Head(this);
-		this.buzzer = new Buzzer(this);
 		this.motor = new Motor(this);
 		this.screen = new Screen(this);
 		// this.eyes = new EyeAnimation(this);
@@ -44,6 +43,8 @@ class Cozmars {
 		ws.onerror = (e)=>{console.error('cozmars ws error:', e);}
 		if('-1' == await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})) throw 'Please close other programs or pages that are connecting to Cozmars first';
 		this.ws = ws;
+		this.about = await fetch('http://'+this.host+'/about').then(r=>r.json())
+		[this.buzzer, this.speaker] = this.about.version[0]=='1'?[new Buzzer(this), null]:[null, new Speaker(this)];		
 		this._stub = new RPCClient(ws);
 		this._startSensorTask();
 		this._connected = true;
@@ -233,33 +234,40 @@ class Camera extends OutputStreamComponent{
 		this._framerate = fr;
 	}
 	_createRpc() {
-		const [w, h] = this.resolution;
-		return this._stub.rpc('camera', [w, h, this.framerate]);
+		return this._stub.rpc('camera', [...this.resolution, this.framerate]);
 	}
 }
+soundMixin={
+	samplerate(sr){
+		if(sr==undefined)return this._samplerate;
+		if(this.closed) throw 'Cannot set samplerate while device is running';
+		this._samplerate = sr;
+	}
+	blockduration(bd){
+		if(bd==undefined)return this._blockduration;
+		if(this.closed) throw 'Cannot set blockduration while device is running';
+		this._blockduration = bd;		
+	}
+	dtype(dt){
+		if(dt==undefined)return this._dtype;
+		if(this.closed) throw 'Cannot set dtype while device is running';
+		this._dtype = dt;		
+	}
+	samplewidth(dt){return {'int16':2, 'int8':1, 'int32':4, 'float32':4, 'float64':8}[dt||this._dtype]}
+	channels(){return 1}
+	async volume(v){return await this._stub.rpc(this._volume_name,v?[v]:[])}
+};
 class Microphone extends OutputStreamComponent{
 	constructor(robot) {
 		super(robot);
 		this._samplerate = 16000;
 		this._dtype = 'int16';
-		this._frameTime = 0.1;
+		this._blockduration = 0.1;
+		this._volume_name='microphone_volume';
 	}
-	get samplerate(){return this._samplerate }
-	get frameTime(){return this._frameTime}
-	get dtype(){return this._dtype}
-	get channels(){return 1}
-	set samplerate(sr){
-		if (!this.closed)
-			throw 'Cannot set resolution while microphone is running';
-		this._samplerate = sr;
-	}
-	set frameTime(ft) {
-		if (!this.closed)
-			throw 'Cannot set resolution while microphone is running';
-		this._frameTime = ft;
-	}
-	_createRpc() {return this._stub.rpc('microphone', [this.samplerate, this.dtype, this.frameTime])}	
+	_createRpc() {return this._stub.rpc('microphone', [this.samplerate(), this.dtype(), parseInt(this.samplerate()*this.blockduration())])}	
 }
+Object.assign(Microphone.prototype, soundMixin);
 class InputStreamComponent extends Component{
 	constructor(robot) {
 		super(robot);
@@ -281,17 +289,60 @@ class InputStreamComponent extends Component{
 		this._closed = false;
 	}
 }
-class Buzzer extends InputStreamComponent{	
+class Speaker extends InputStreamComponent {
 	constructor(robot) {
 		super(robot);
-		this._tones = 'CCDDEFFGGAAB';
-		this._semitones = {
-	        '♭': -1,
-	        'b': -1,
-	        '♮': 0,
-	        '':  0,
-	        '♯': 1,
-	        '#': 1,};
+		this._samplerate = 16000;
+		this._dtype = 'int16';
+		this._blockduration = 0.1;
+		this._volume_name = 'speaker_volume';
+	}
+	_createRpcAndQ(){
+		var q = new Queue();
+		return [this._stub.rpc('speaker',[this._t_sr,this._t_dt,parseInt(this._t_sr*this._t_bd)],q), q];
+	}
+	*_arrGen(arr,bs){
+		if(arr.length%bs){
+			var extended = new (arr.constructor)(Math.ceil(arr.length/bs)*bs);
+			extended.set(arr);
+			arr = extended;
+		}
+		for(var i=0;i<arr.length;i+=bs)			
+			yield new Uint8Array(arr.buffer,i*arr.BYTES_PER_ELEMENT,bs*arr.BYTES_PER_ELEMENT);
+	}
+	async play(arr, repeat=1, preload=5, op={}){
+		try{
+			this._t_sr = op.samplerate||this.samplerate();
+			this._t_dt = arr.constructor.name.toLowerCase().replace('array','');
+			this._t_bd = op.blockduration||this.blockduration();
+			this.open();
+			var count = 0;
+			while(repeat--)
+				for(var data of this._arrGen(arr, bs)){
+					await sleep(this._t_bd*(count>preload? 0.95: 0.5));
+					await this._inQ.put_nowait(data);	
+					count += this._t_bd;
+				}				
+		}catch(e) {
+			console.error(e);
+		} finally {
+			await this._inQ.put_nowait(null, true);
+			this.close();
+		}
+	}
+	async beep(tones, repeat=1, tempo=120, dutyCycle=0.9){}
+	sine(sec, freq, sr, fade=0.1, dt=Int8Array){
+		c = Math.PI*2*freq/sr;
+		max = dt.name[0]=='I' ? (2**(dt.BYTES_PER_ELEMENT*8-1)-1) : 1;
+		fadeStart = (sec-fade)*sr;
+		fade *= sr;
+		return dt.from({length:parseInt(sec*sr)},(x,i)=>((i<fadeStart*)?1:(1-(i-fadeStart)/fade))*Math.sin(c*i)*max)
+	}
+}
+Object.assign(Speaker.prototype, soundMixin);
+class Buzzer extends InputStreamComponent{	
+	constructor(robot) {
+		super(robot);		
 	}
 	_createRpcAndQ(){
 		var q = new Queue();
@@ -301,7 +352,7 @@ class Buzzer extends InputStreamComponent{
 	async tone(t, duration){
 		if (t==undefined) return this._tone;
 		else if(!this.closed) throw 'Cannot set tone while buzzer is playing';
-		else await this._stub.rpc('tone', [this._2freq(t), duration]);
+		else await this._stub.rpc('tone', [Tone(tone).freq, duration]);
 	}
 	async play(song, tempo=120, duty_cycle=0.9){
 		if (duty_cycle>1 || duty_cycle <=0) throw 'duty_cycle out of range (0, 1]';		
@@ -320,7 +371,7 @@ class Buzzer extends InputStreamComponent{
 					if (t=='(') delay/=2;
 					else if (t==')') delay*=2;
 					else {
-						await this._inQ.put_nowait(this._2freq(t));
+						await this._inQ.put_nowait(Tone(tone).freq)
 						await sleep(delay*duty_cycle);
 						if (duty_cycle!=1) {
 							await this._inQ.put_nowait(null);
@@ -341,7 +392,7 @@ class Buzzer extends InputStreamComponent{
 			for (t of tone)
 				this._play_one_tone(t, delay/2, duty_cycle);
 		}else {
-			await this._inQ.put_nowait(this._2freq(tone))
+			await this._inQ.put_nowait(Tone(tone).freq)
 			await sleep(delay*duty_cycle)
 			if (duty_cycle!=1){
 				await this._inQ.put_nowait(null);
@@ -349,20 +400,32 @@ class Buzzer extends InputStreamComponent{
 			}
 		}
 	}
-	_2freq(note) {
+}
+class Tone{
+	static _tones = 'CCDDEFFGGAAB';
+	static _semitones = {
+	        '♭': -1,
+	        'b': -1,
+	        '♮': 0,
+	        '':  0,
+	        '♯': 1,
+	        '#': 1,};
+	constructor(n) {this._n=n;this._freq=Tone._2freq(n);}
+	get freq() {return this._freq}
+	static _2freq(note) {
 		if (typeof note == 'string')
-			return this._note2freq(note);
+			return Tone._note2freq(note);
 		else if (typeof note == 'number' && note >0 && note < 128)
-			return this._midi2freq(note);
+			return Tone._midi2freq(note);
 		else
 			return note;
 	}
-	_midi2freq(midi_note){
+	static _midi2freq(midi_note){
 		var midi = parseInt(midi_note);
 		return  2 ** ((midi-69)/12) * 440;			
 	}
-	_note2freq(note) {
-		return this._midi2freq(this._tones.indexOf(note[0])+(note.length==3?this._semitones[note[1]]:0)+parseInt(note[note.length-1])*12+12)
+	static _note2freq(note) {
+		return Tone._midi2freq(Tone._tones.indexOf(note[0])+(note.length==3?Tone._semitones[note[1]]:0)+parseInt(note[note.length-1])*12+12)
 	}
 }
 class EyeAnimation extends Component {

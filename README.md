@@ -17,7 +17,7 @@ Firmware for Cozmars V2
 	* memory split and set 128 or 256 for GPU (not sure if this is needed)
 * enable microphone according to [adafruit article](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
 * enable i2s amp(speaker) according to adafruit article starting from ["Create asound.conf file" section](https://learn.adafruit.com/adafruit-max98357-i2s-class-d-mono-amp/raspberry-pi-usage#create-asound-dot-conf-file-2712971-28)
-* (optional) make rpi auto generate wifi hotspot when unable to connect to your wifi router, [this article from raspberryconnect](https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection) will help
+* make rpi auto generate wifi hotspot when unable to connect to your wifi router, [this article from raspberryconnect](https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection) will help
 * install required libs
 	1. build portaudio from latest(2020 Dec) source for [a new bug fix](https://github.com/PortAudio/portaudio/pull/344)
 		```
@@ -60,7 +60,7 @@ Firmware for Cozmars V2
 * 3.7v battery (important: not 7.4v)
 * ~~buzzer~~
 * MAX98357 amp
-* 8om, 0.5w, 36mm speaker
+* 35x20mm 8om 1w cavity speaker
 * and many 10cm wires (use soft silicone wires to connect display)
 
 ![wiring](/wiring.png)
@@ -73,5 +73,5 @@ This project is open sourced for educational purpose, Commercial usage is prohib
 
 ## Related stuff
 
-* 3d model(v1) and more detailed build instructions: https://www.thingiverse.com/thing:4657644
+* 3d model and build instructions: https://www.thingiverse.com/thing:4657644
 * python sdk: https://github.com/hyansuper/rcute-cozmars

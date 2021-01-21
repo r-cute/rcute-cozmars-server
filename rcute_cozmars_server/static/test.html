@@ -24,8 +24,8 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<tr><td>{_("Infrared")}</td><td id='ir'></td></tr>
 </table>
 <h3>{_("Servo test")}</h3>
-	<button onclick='robot.head.angle(20)'>{_("Head up")}</button>
-	<button onclick='robot.head.angle(-20)'>{_("Head down")}</button>
+	<button onclick='robot.head.angle(30)'>{_("Head up")}</button>
+	<button onclick='robot.head.angle(-30)'>{_("Head down")}</button>
 	<button onclick='robot.lift.height(1)'>{_("Lift up")}</button>
 	<button onclick='robot.lift.height(0)'>{_("Lift down")}</button>
 <h3>{_("Motor test")}  <input id='sec' type='number' size='1' value='2'/>{_("second")}</h3>
@@ -34,8 +34,8 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<button onclick='robot.motor.speed([1,1],parseInt(q("#sec ").value))'>{_("Forward")}</button>
 	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Backward")}</button>
 	<button onclick='robot.motor.speed([0,0])'>{_("Stop")}</button>
-<h3>{_("Buzzer test")}</h3>
-	<button onclick='robot.buzzer.play("A4,A4", 120)'>{_("Beep")}</button>
+<h3>{_("Speaker test")}</h3>
+	<button onclick='robot.speaker.beep([800])'>{_("Beep")}</button>
 <h3>{_("Display test")}</h3>
 	<button onclick='robot.screen.fill([rand_col(),rand_col(),rand_col()])'>{_("Random color")}</button>
 	<button onclick='robot.screen.brightness(0.8,1)'>{_("Bright")}</button>

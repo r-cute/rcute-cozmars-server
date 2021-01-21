@@ -313,3 +313,6 @@ msgstr ""
 
 msgid "The privious settings cannot be restored after saving, are you sure you want to save it?"
 msgstr ""
+
+msgid "Speaker test"
+msgstr ""

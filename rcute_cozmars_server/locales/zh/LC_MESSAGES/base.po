@@ -313,3 +313,6 @@ msgstr "确定要关机吗？"
 
 msgid "The privious settings cannot be restored after saving, are you sure you want to save it?"
 msgstr "保存后将不能恢复原设置，确定要保存？"
+
+msgid "Speaker test"
+msgstr "扬声器测试"
