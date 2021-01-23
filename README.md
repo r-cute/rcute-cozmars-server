@@ -13,8 +13,8 @@ Cozmars, the open source 3d printable educational robot
 * (optional) make rpi auto generate wifi hotspot when unable to connect to your wifi router, [this article from raspberryconnect](https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection) will help
 * install rcute-cozmars-server 
 ```
-sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi
-sudo python3 -m install rcute-cozmars-server==1.*
+sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi python3-pip
+sudo python3 -m pip install rcute-cozmars-server==1.*
 mkdir ~/.cozmars
 cp conf.json ~/.cozmars/conf.json
 cp env.json ~/.cozmars/env.json
