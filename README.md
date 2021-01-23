@@ -16,6 +16,7 @@ Cozmars, the open source 3d printable educational robot
 sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi
 sudo python3 -m install rcute-cozmars-server==1.*
 mkdir ~/.cozmars
+//not sure what to do at this point
 cp conf.json ~/.cozmars/conf.json
 cp env.json ~/.cozmars/env.json
 sudo cp cozmars.service /etc/systemd/system
