@@ -20,7 +20,7 @@ cp conf.json ~/.cozmars/conf.json
 cp env.json ~/.cozmars/env.json
 sudo cp cozmars.service /etc/systemd/system
 sudo systemctl enable cozmars.service
-reboot
+sudo reboot
 ```
 
 ## Electronic parts
