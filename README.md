@@ -16,9 +16,9 @@ Cozmars, the open source 3d printable educational robot
 sudo apt install libtiff5 libopenjp2-7 libportaudio2 python3-cffi python3-pip
 sudo python3 -m pip install rcute-cozmars-server==1.*
 mkdir ~/.cozmars
-wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/master/conf.json -P ~/.cozmars
-wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/master/env.json -P ~/.cozmars
-sudo wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/master/cozmars.service -P /etc/systemd/system
+wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/v1/conf.json -P ~/.cozmars
+wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/v1/env.json -P ~/.cozmars
+sudo wget https://raw.githubusercontent.com/hyansuper/rcute-cozmars-server/v1/cozmars.service -P /etc/systemd/system
 sudo systemctl enable cozmars.service
 sudo reboot
 ```
