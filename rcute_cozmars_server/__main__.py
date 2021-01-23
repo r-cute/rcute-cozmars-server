@@ -117,7 +117,7 @@ def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
-    return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format({_("Rebooting")}, _("This takes about a minute"))))
+    return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format(_("Rebooting"), _("This takes about a minute"))))
 
 @app.route('/about')
 def serial(request):
