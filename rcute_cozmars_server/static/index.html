@@ -49,8 +49,8 @@
 	function q(s) {{ return document.querySelector(s); }}
 	fetch('https://pypi.org/pypi/rcute-cozmars-server/json')
 		.then(j => j.json())
-		.then(j => Object.keys(j.releases)
-		.reduce((s, e) => {{ return (e[0] == '1') ? e : s }})).then(latest_version => {{
+		.then(j => Object.keys(j.releases).reduce((s, e) => {{ return (e[0]=='2')?e:s }}))
+		.then(latest_version => {{
 			q('#latest_version').innerText = latest_version;
 			if (latest_version != '{version}') q('#upgrade').style.display = 'inline';
 		}});
