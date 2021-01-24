@@ -6,7 +6,6 @@ Firmware for Cozmars V2
 
 * buzzer is replaced by a speaker
 * motors are slightly faster
-* cube has motion sensor and an rgb led
 
 ## Setup
 
