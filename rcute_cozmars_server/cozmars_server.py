@@ -115,7 +115,7 @@ class CozmarsServer:
         self.rarm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['right_arm'])
         self.larm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['left_arm'])
         self._head = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['head'])
-        self._head.set_actuation_range(-20, 20)
+        self._head.set_actuation_range(-30, 30)
 
     def save_conf(self, conf_path=util.CONF):
         # only servo and motor configs are changed
@@ -278,8 +278,8 @@ class CozmarsServer:
         if angle == None:
             self._head.angle = None
             return
-        if not -20 <= angle <= 20:
-            raise ValueError('Angle must be -20 ~ 20')
+        if not self._head._start_angle <= angle <= self._head._end_angle:
+            raise ValueError(f'Angle out of range [{self._head._start_angle}, {self._head._start_angle}]')
         duration = speed = None
         try:
             duration = args[1]

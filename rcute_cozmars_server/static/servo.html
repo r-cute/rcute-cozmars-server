@@ -59,7 +59,7 @@
   <p>{_("Calibration is only needed when head or lift cannot reach specified position, or both arms do not move in sync.")}</p>
   <p style='background-color:yellow;text-align:left;color:red;padding:10px;'>{_("Warning: After clicking Save, the previous settings cannot be restored!")}</p>
 <h2>{_("Head")}&nbsp;&nbsp;&nbsp;&nbsp;<span id='head_val'>0°</span></h2>
-  <div>-20°<input class='bottom' type='range' max="20" min='-20' value="0" step='5' name='head' oninput='set_servo("head")'>20°</div>
+  <div>-30°<input class='bottom' type='range' max="30" min='-30' value="0" step='5' name='head' oninput='set_servo("head")'>30°</div>
   <div>
 	  <input class='left' type='number' size="1" name='head_min' onchange="cal_servo('head')">
 	  <input class='right' type='number' size= "1" name='head_max' onchange="cal_servo('head')"></div>
