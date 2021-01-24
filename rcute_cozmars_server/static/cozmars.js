@@ -428,6 +428,7 @@ class Buzzer extends InputStreamComponent{
 		} catch(e) {
 			console.error(e);
 		} finally {
+			await this._inQ.put_nowait(null, true);
 			await this._inQ.put_nowait(new StopIteration(), true);
 			this.close();
 		}
