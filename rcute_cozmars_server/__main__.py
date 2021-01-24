@@ -149,8 +149,7 @@ def upgrade(request):
 
     async def streaming_fn(response):
         await response.write("""<p>{}...</p>""".format(_("Checking for upgrade, please wait")))
-        update_cmd = util.CONF['update']['cmd']
-        proc = await asyncio.create_subprocess_shell(update_cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        proc = await asyncio.create_subprocess_shell(cozmars_rpc_server.conf['upgrade']['cmd'], stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
 
         err_flag = False
         async def write(stream, format, err):
