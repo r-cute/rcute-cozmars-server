@@ -100,8 +100,8 @@ msgid "MAC"
 msgstr "MAC"
 
 #: static/index.html:31
-msgid "Firmware (V1)"
-msgstr "固件(V1)"
+msgid "Firmware"
+msgstr "固件"
 
 #: static/index.html:32
 msgid "Current version {version}, latest version"

@@ -100,7 +100,7 @@ msgid "MAC"
 msgstr ""
 
 #: static/index.html:31
-msgid "Firmware (V1)"
+msgid "Firmware"
 msgstr ""
 
 #: static/index.html:32

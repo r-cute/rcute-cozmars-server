@@ -34,7 +34,7 @@
 		}});
 	}}
 	function save_config() {{
-		if(confirm('{_("The previous settings cannot be restored after saving, are you sure you want to save it?")}')) {{
+		if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save it?")}')) {{
 			stub.rpc('save_conf',[])
 		}}
 	}}
@@ -80,5 +80,5 @@
 	
 	<br><br><br><br><br>
 	<button style='margin-right:100px;' onclick="stub.rpc('reset_motors',[]);reset_config();">{_("Reset")}</button>
-	<button onclick="if(confirm('{_("The privious settings cannot be restored after saving, are you sure you want to save it?")}'))stub.rpc('save_config',[])">{_("Save")}</button>
+	<button onclick="save_config()">{_("Save")}</button>
 	</body></html>
