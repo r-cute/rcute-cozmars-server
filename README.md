@@ -2,7 +2,7 @@
 
 Firmware for Cozmars V2
 
-## Upgrades compared to [V1](https://github.com/hyansuper/rcute-cozmars-server/tree/v1)
+## Upgrades compared to [V1](https://github.com/r-cute/rcute-cozmars-server/tree/v1)
 
 * buzzer is replaced by a speaker
 * motors are slightly faster
@@ -29,18 +29,18 @@ Firmware for Cozmars V2
 		in the future you can simply `apt install libportaudio2`
 	2. install other libs
 		```
-		sudo apt install libtiff5 libopenjp2-7 python3-cffi
+		sudo apt install libtiff5 libopenjp2-7 python3-cffi python3-pip
 		```
 
 * install rcute-cozmars-server 
 	```
-	sudo python3 -m install rcute-cozmars-server==2.*
+	sudo python3 -m pip install rcute-cozmars-server==2.*
 	mkdir ~/.cozmars
-	cp conf.json ~/.cozmars/conf.json
-	cp env.json ~/.cozmars/env.json
-	sudo cp cozmars.service /etc/systemd/system
+	wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/conf.json -P ~/.cozmars
+	wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/env.json -P ~/.cozmars
+	sudo wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/cozmars.service -P /etc/systemd/system
 	sudo systemctl enable cozmars.service
-	reboot
+	sudo reboot
 	```
 
 ## Electronic parts
@@ -74,4 +74,4 @@ This project is open sourced for educational purpose, Commercial usage is prohib
 ## Related stuff
 
 * 3d model and build instructions: https://www.thingiverse.com/thing:4657644
-* python sdk: https://github.com/hyansuper/rcute-cozmars
+* python sdk: https://github.com/r-cute/rcute-cozmars

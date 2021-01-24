@@ -68,7 +68,7 @@ def splash_screen():
     return Image.open(splash)
 
 def beep(server):
-    with open(static('beep_800hz_16k_i8.raw'), 'rb') as f:
+    with open(static('sine_800hz_16k_i8.raw'), 'rb') as f:
         d = f.read()
     q = asyncio.Queue()
     for _ in range(5):

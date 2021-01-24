@@ -2,7 +2,7 @@
 <style>button{{margin-left: 10px;margin-right: 10px;}}</style>
 <script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/hyansuper/rcute-cozmars-server/rcute_cozmars_server/static/cozmars.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/r-cute/rcute-cozmars-server/rcute_cozmars_server/static/cozmars.min.js"></script>
 <script>
 function js_alter(b, src){{if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}}
 function q(d){{return document.querySelector(d)}}
@@ -35,11 +35,11 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Backward")}</button>
 	<button onclick='robot.motor.speed([0,0])'>{_("Stop")}</button>
 <h3>{_("Speaker test")}</h3>
-	<button onclick='robot.speaker.beep([800])'>{_("Beep")}</button>
+	<button onclick='robot.speaker.beep([600],{dutyCycle:0.5})'>{_("Beep")}</button>
 <h3>{_("Display test")}</h3>
 	<button onclick='robot.screen.fill([rand_col(),rand_col(),rand_col()])'>{_("Random color")}</button>
 	<button onclick='robot.screen.brightness(0.8,1)'>{_("Bright")}</button>
-	<button onclick='robot.screen.brightness(0.1,1)'>{_("Dim")}</button>
+	<button onclick='robot.screen.brightness(0.05,1)'>{_("Dim")}</button>
 <script defer>
 const button=document.getElementById('button');
 const sonar=document.getElementById('sonar');
