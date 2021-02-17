@@ -39,6 +39,7 @@ Firmware for Cozmars V2
 	wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/env.json -P ~/.cozmars
 	sudo wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/cozmars.service -P /etc/systemd/system
 	sudo systemctl enable cozmars.service
+	sudo wget https://raw.githubusercontent.com/r-cute/rcute-cozmars-server/master/cozmars.avahi.service -P /etc/avahi/services
 	sudo reboot
 	```
 
