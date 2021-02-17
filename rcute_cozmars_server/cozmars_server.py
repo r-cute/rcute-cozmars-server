@@ -463,7 +463,7 @@ class CozmarsServer:
             await bg_task
 
 
-    async def speaker(self, samplerate, dtype, blocksize, *, request_stream):
+    async def speaker(self, samplerate, dtype, blocksize, volume=None, *, request_stream):
         import sounddevice as sd
         loop = asyncio.get_running_loop()
         done_ev = asyncio.Event()
@@ -496,9 +496,14 @@ class CozmarsServer:
 
         self.mic_int = True
         async with self.i2s_lock:
+            if volume is not None: # temporarily change volume
+                pre_vol = self.speaker_volume()
+                self.speaker_volume(volume)
             self._speaker_power(1)
             with sd.RawOutputStream(callback=cb, dtype=dtype, samplerate=samplerate, channels=1, blocksize=blocksize, finished_callback=fcb):
                 await done_ev.wait()
+                if volume is not None:
+                    self.speaker_volume(pre_vol)
 
 
     async def microphone(self, samplerate, dtype, blocksize):
