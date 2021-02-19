@@ -48,7 +48,7 @@ const robot=new Cozmars(ip=location.host);
 robot.connect().catch(alert);
 setInterval(function(){{
 ir.innerText=robot.infrared.state;
-button.innerText=robot.button.doublePressed?"double_pressed":(robot.button.held?"held":(robot.button.pressed?"pressed":'released'));
+button.innerText=robot.button.doublePressed?"double_pressed":(robot.button.longPressed?"long_pressed":(robot.button.pressed?"pressed":'released'));
 sonar.innerText=robot.sonar.distance;
 }},300);
 </script>

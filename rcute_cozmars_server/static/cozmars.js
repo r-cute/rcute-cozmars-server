@@ -70,7 +70,7 @@ class Cozmars {
 						switch(ev){
 							case 'pressed':
 							if (!data)
-								this.button.held = this.button.doublePressed = false;
+								this.button.longPressed = this.button.doublePressed = false;
 							this.button.pressed = data;
 							this.button.released = !this.button.pressed
 							break;
@@ -78,8 +78,8 @@ class Cozmars {
 							this.button.pressed = this.button.doublePressed = data;
 							this.button.released = !this.button.pressed
 							break;
-							case 'held':
-							this.button.held = data;
+							case 'long_pressed':
+							this.button.longPressed = data;
 							break;
 							case 'sonar':
 							this.sonar.distance = data;

@@ -34,7 +34,7 @@ class CozmarsServer:
         def button_press_cb():
             if self._sensor_event_queue:
                 now = time.time()
-                if now - self._button_last_press_time <= self._double_press_max_interval:
+                if now - self._button_last_press_time <= self._double_press_threshold:
                     ev = 'double_pressed'
                 else:
                     ev = 'pressed'
@@ -45,7 +45,7 @@ class CozmarsServer:
         self.button.hold_time = 1
         self.button.when_pressed = button_press_cb
         self.button.when_released = cb('pressed', self.button, 'is_pressed')
-        self.button.when_held = cb('held', self.button, 'is_held')
+        self.button.when_held = cb('long_pressed', self.button, 'is_held')
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
         self.screen.fill(0)
@@ -77,7 +77,7 @@ class CozmarsServer:
         self.event_loop = asyncio.get_running_loop()
 
         self.button = Button(self.conf['button'])
-        self._double_press_max_interval = .5
+        self._double_press_threshold = .5
         self.cam = None
 
         spi = board.SPI()
@@ -367,25 +367,25 @@ class CozmarsServer:
             self._sensor_event_queue = None
             raise e
 
-    def double_press_max_interval(self, *args):
+    def double_press_threshold(self, *args):
         if args:
-            self._double_press_max_interval = args[0]
+            self._double_press_threshold = args[0]
         else:
-            return self._double_press_max_interval
+            return self._double_press_threshold
 
-    def hold_repeat(self, *args):
+    def long_press_repeat(self, *args):
         if args:
             self.button.hold_repeat = args[0]
         else:
             return self.button.hold_repeat
 
-    def hold_time(self, *args):
+    def long_press_threshold(self, *args):
         if args:
             self.button.hold_time = args[0]
         else:
             return self.button.hold_time
 
-    def threshold_distance(self, *args):
+    def distance_threshold(self, *args):
         if args:
             self.sonar.threshold_distance = args[0]
         else:
