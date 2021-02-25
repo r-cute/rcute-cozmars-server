@@ -229,7 +229,7 @@ class CozmarsServer:
         elif speed:
             if not 0 < speed <= 1 * self.servo_update_rate:
                 raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
-            duration = (value - servo.fraction)/speed
+            duration = abs(value - servo.fraction)/speed
         steps = int(duration * self.servo_update_rate)
         interval = 1/self.servo_update_rate
         try:
@@ -275,8 +275,6 @@ class CozmarsServer:
             if not 0 < speed <= 1 * self.servo_update_rate:
                 raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
             duration = abs(height - self.larm.fraction)/speed
-        if duration == 0:
-            return
         steps = int(duration * self.servo_update_rate)
         interval = 1/self.servo_update_rate
         try:
