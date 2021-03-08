@@ -39,12 +39,12 @@ class Cozmars {
 	}
 	async connect(){
 		const ws = new WebSocket('ws://'+this.host+'/rpc');
-		ws.onclose = (e)=>{console.debug('cozmars ws closed'); this.disconnect();} 
+		ws.onclose = (e)=>{console.debug('cozmars ws closed'); this.disconnect();}
 		ws.onerror = (e)=>{console.error('cozmars ws error:', e);}
 		if('-1' == await new Promise((r,j)=>{ws.onmessage=e=>{r(e.data)}})) throw 'Please close other programs or pages that are connecting to Cozmars first';
 		this.ws = ws;
 		this.about = await fetch('http://'+this.host+'/about').then(r=>r.json());
-		[this.buzzer, this.speaker] = this.about.version[0]=='1'?[new Buzzer(this), null]:[null, new Speaker(this)];		
+		[this.buzzer, this.speaker] = this.about.version[0]=='1'?[new Buzzer(this), null]:[null, new Speaker(this)];
 		this._stub = new RPCClient(ws);
 		this._startSensorTask();
 		this._connected = true;
@@ -52,7 +52,7 @@ class Cozmars {
 	disconnect(){
 		this._sensorTask && this._sensorTask.reject();
 		this.eyes.expression('stop');
-		this._senorRpc && this._senorRpc.cancel();			
+		this._senorRpc && this._senorRpc.cancel();
 		this.camera.close();
 		this.ws.close();
 		this._connected = false;
@@ -74,7 +74,7 @@ class Cozmars {
 							this.button.pressed = data;
 							this.button.released = !this.button.pressed
 							break;
-							case 'double_pressed': 
+							case 'double_pressed':
 							this.button.pressed = this.button.doublePressed = data;
 							this.button.released = !this.button.pressed
 							break;
@@ -193,7 +193,7 @@ class OutputStreamComponent extends Component{
 		while(waiting=this._waitingList.pop())
 			waiting.reject();
 	}
-	open() {		
+	open() {
 		if (!this.closed) return;
 		this._waitingList = [];
 		new Promise((r,j)=>{
@@ -246,12 +246,12 @@ soundMixin={
 	blockduration(bd){
 		if(bd==undefined)return this._blockduration;
 		if(this.closed) throw 'Cannot set blockduration while device is running';
-		this._blockduration = bd;		
+		this._blockduration = bd;
 	},
 	dtype(dt){
 		if(dt==undefined)return this._dtype;
 		if(this.closed) throw 'Cannot set dtype while device is running';
-		this._dtype = dt;		
+		this._dtype = dt;
 	},
 	samplewidth(dt){return {'int16':2, 'int8':1, 'int32':4, 'float32':4, 'float64':8}[dt||this._dtype]},
 	channels(){return 1},
@@ -265,7 +265,7 @@ class Microphone extends OutputStreamComponent{
 		this._blockduration = 0.1;
 		this._volume_name='microphone_volume';
 	}
-	_createRpc() {return this._stub.rpc('microphone', [this.samplerate(), this.dtype(), parseInt(this.samplerate()*this.blockduration())])}	
+	_createRpc() {return this._stub.rpc('microphone', [this.samplerate(), this.dtype(), parseInt(this.samplerate()*this.blockduration())])}
 }
 Object.assign(Microphone.prototype, soundMixin);
 class InputStreamComponent extends Component{
@@ -283,7 +283,7 @@ class InputStreamComponent extends Component{
 		this._inQ.close();
 		this._closed = true;
 	}
-	open() {		
+	open() {
 		if (!this.closed) return;
 		[this._rpc, this._inQ] = this._createRpcAndQ();
 		this._closed = false;
@@ -307,25 +307,26 @@ class Speaker extends InputStreamComponent {
 			extended.set(arr);
 			arr = extended;
 		}
-		for(var i=0;i<arr.length;i+=bs)			
+		for(var i=0;i<arr.length;i+=bs)
 			yield new Uint8Array(arr.buffer,i*arr.BYTES_PER_ELEMENT,bs*arr.BYTES_PER_ELEMENT);
+		yield new Uint8Array(bs*arr.BYTES_PER_ELEMENT);//play a empty sound at the end.
 	}
 	async play(arr, op={}){
 		this._t_sr = op.samplerate||this.samplerate();
 		this._t_dt = arr.constructor.name.toLowerCase().replace('array','');
-		this._t_bd = op.blockduration||this.blockduration();	
-		this._t_bs = parseInt(this._t_sr*this._t_bd);		
+		this._t_bd = op.blockduration||this.blockduration();
+		this._t_bs = parseInt(this._t_sr*this._t_bd);
 		var repeat = op.repeat || 1;
-		var preload = op.preload || 5;		
-		var count = 0;	
+		var preload = op.preload || 5;
+		var count = 0;
 		try{
 			this.open();
 			while(repeat--)
 				for(var data of this._arrGen(arr, this._t_bs)){
 					await sleep(this._t_bd*(count>preload? 0.95: 0.5));
-					await this._inQ.put_nowait(data);	
+					await this._inQ.put_nowait(data);
 					count += this._t_bd;
-				}				
+				}
 		}catch(e) {
 			console.error(e);
 		}finally {
@@ -335,8 +336,8 @@ class Speaker extends InputStreamComponent {
 	}
 	async beep(tones, op={}){
 		var dutyCycle = op.dutyCycle || 0.9;
-		if (dutyCycle>1 || dutyCycle <=0) throw 'dutyCycle out of range (0, 1]';			
-		var mf = this._maxFreq(tones);		
+		if (dutyCycle>1 || dutyCycle <=0) throw 'dutyCycle out of range (0, 1]';
+		var mf = this._maxFreq(tones);
 		if (mf > 11025) op.samplerate = 44100;
         else if( mf > 800) op.samplerate = 22050;
         else op.samplerate = 16000;
@@ -345,11 +346,11 @@ class Speaker extends InputStreamComponent {
 			await this.play(this._concatArray(this.wavFromArray(tones, base, dutyCycle, op.samplerate)), op);
 		}else if (typeof tones =='string') {
 			tones = tones.replace(/\(/g,',(,').replace(/\)/g,',),').split(/[\s,]+/);
-			await this.play(this._concatArray(this.wavFromStrings(tones, base, dutyCycle, op.samplerate)), op);
+			await this.play(this._concatArray(this.wavFromString(tones, base, dutyCycle, op.samplerate)), op);
 		}
 	}
 	_maxFreq(tones){
-		if(tones instanceof Array) 
+		if(tones instanceof Array)
 			tones = tones.flat(Infinity);
 		else if(typeof tones=='string')
 			tones = tones.replace(/\(/g,',').replace(/\)/g,',').split(/[\s,]+/);
@@ -361,7 +362,7 @@ class Speaker extends InputStreamComponent {
 		arr.forEach(a=>{sum.set(a,offset);offset+=a.length;});
 		return sum;
 	}
-	wavFromStrings(tones, baseBeat, dutyCycle, sr){
+	wavFromString(tones, baseBeat, dutyCycle, sr){
 		var wav = [];
 		for (var t of tones)
 			if (t=='(') baseBeat/=2;
@@ -385,9 +386,9 @@ class Speaker extends InputStreamComponent {
 	}
 }
 Object.assign(Speaker.prototype, soundMixin);
-class Buzzer extends InputStreamComponent{	
+class Buzzer extends InputStreamComponent{
 	constructor(robot) {
-		super(robot);		
+		super(robot);
 	}
 	_createRpcAndQ(){
 		var q = new Queue();
@@ -400,7 +401,7 @@ class Buzzer extends InputStreamComponent{
 		else await this._stub.rpc('tone', [Tone._2freq(tone), duration]);
 	}
 	async play(song, tempo=120, dutyCycle=0.9){
-		if (dutyCycle>1 || dutyCycle <=0) throw 'dutyCycle out of range (0, 1]';		
+		if (dutyCycle>1 || dutyCycle <=0) throw 'dutyCycle out of range (0, 1]';
 		try {
 			this.open();
 			var delay = 60/tempo;
@@ -468,7 +469,7 @@ class Tone{
 	}
 	static _midi2freq(midi_note){
 		var midi = parseInt(midi_note);
-		return  2 ** ((midi-69)/12) * 440;			
+		return  2 ** ((midi-69)/12) * 440;
 	}
 	static _note2freq(note) {
 		return Tone._midi2freq(Tone._tones.indexOf(note[0])+(note.length==3?Tone._semitones[note[1]]:0)+parseInt(note[note.length-1])*12+12)
@@ -500,6 +501,6 @@ class EyeAnimation extends Component {
 		this._eye.circle((this._size-this._radius, this._radius), this._radius, this._color);
 	}
 	async animate(robot, ignored){
-		
+
 	}
 }

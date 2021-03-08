@@ -31,7 +31,7 @@ Firmware for Cozmars V2
 		sudo apt install libtiff5 libopenjp2-7 python3-cffi python3-pip
 		```
 
-* install rcute-cozmars-server 
+* install rcute-cozmars-server
 	```
 	sudo python3 -m pip install rcute-cozmars-server==2.*
 	mkdir ~/.cozmars
@@ -50,7 +50,7 @@ Firmware for Cozmars V2
 * 9g plastic blue servo X3
 * PCA9685 16-channel servo driver with capacitor (bend straight the 90° pins)
 * 1.14 inch color display
-* 3v ~~15r/m~~ 20r/m N20 motor X2
+* 3v ~~15r/m~~ 30r/m N20 motor X2
 * L298N motor driver
 * infrared sensor X2
 * ultrasonic distance sensor (3.3v compatible)
