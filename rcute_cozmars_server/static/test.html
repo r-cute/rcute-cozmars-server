@@ -35,7 +35,7 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 	<button onclick='robot.motor.speed([-1,-1],parseInt(q("#sec").value))'>{_("Backward")}</button>
 	<button onclick='robot.motor.speed([0,0])'>{_("Stop")}</button>
 <h3>{_("Speaker test")}</h3>
-	<button onclick='robot.speaker.beep([600,600],{{dutyCycle:0.5}})'>{_("Beep")}</button>
+	<button onclick='robot.speaker.beep([800,800],{{dutyCycle:0.5}})'>{_("Beep")}</button>
 <h3>{_("Display test")}</h3>
 	<button onclick='robot.screen.fill([rand_col(),rand_col(),rand_col()])'>{_("Random color")}</button>
 	<button onclick='robot.screen.brightness(0.8,1)'>{_("Bright")}</button>
