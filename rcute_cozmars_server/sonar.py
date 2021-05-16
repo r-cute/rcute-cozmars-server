@@ -2,28 +2,25 @@ import RPi.GPIO as GPIO
 import time
 import threading
 
-class DistanceSensor:
-    def __init__(self, trigger, echo, max_distance, threshold_distance, inverval=.1, **kw):
+class Sonar: # one pin distance sensor
+    def __init__(self, pin, max_distance, threshold_distance, inverval=.2):
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(trigger, GPIO.OUT)
-        GPIO.setup(echo, GPIO.IN)
-        self.trigger = trigger
-        self.echo = echo
+        self._pin = pin
         self.max_distance = max_distance
         self.threshold_distance = threshold_distance
         self.inverval = inverval
         self._distance = max_distance
         self.when_in_range = self.when_out_of_range = None
-        self.th = threading.Thread(target=self.run, daemon=True)
+        self._th = threading.Thread(target=self.run, daemon=True)
         self._run = True
-        self.th.start()
+        self._th.start()
 
     def __del__(self):
         self.close()
 
     def close(self):
         self._run = False
-        self.th.join(10)
+        self._th.join(3)
 
     def run(self):
         while self._run:
@@ -31,23 +28,27 @@ class DistanceSensor:
             self.get_distance()
 
     def get_distance(self):
+        GPIO.setup(self._pin, GPIO.OUT)
         # set Trigger to HIGH
-        GPIO.output(self.trigger, True)
+        GPIO.output(self._pin, False)
+        time.sleep(0.000002)
+        GPIO.output(self._pin, True)
 
         # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
-        GPIO.output(self.trigger, False)
+        GPIO.output(self._pin, False)
 
+        GPIO.setup(self._pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         StartTime = StopTime = TriggerTime = time.time()
 
         # save StartTime
-        while GPIO.input(self.echo) == 0:
+        while GPIO.input(self._pin) == 0:
             StartTime = time.time()
-            if StartTime - TriggerTime > 0.001:
+            if StartTime - TriggerTime > 0.01:
                 return
 
         # save time of arrival
-        while GPIO.input(self.echo) == 1:
+        while GPIO.input(self._pin) == 1:
             pass
         StopTime = time.time()
 
@@ -56,7 +57,7 @@ class DistanceSensor:
         # multiply with the sonic speed (34300 cm/s)
         # and divide by 2, because there and back
         self._last_distance = self._distance
-        self._distance = min((TimeElapsed * 343) / 2, self.max_distance)
+        self._distance = min(TimeElapsed * 171.5, self.max_distance)
 
         if self._distance > self.threshold_distance > self._last_distance:
             self.when_out_of_range and self.when_out_of_range()

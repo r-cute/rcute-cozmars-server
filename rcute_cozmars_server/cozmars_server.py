@@ -1,8 +1,8 @@
 import asyncio, time
 from collections.abc import Iterable
 from gpiozero import Motor, Button, LineSensor#, TonalBuzzer, DistanceSensor
-from .distance_sensor import DistanceSensor
-from gpiozero.tones import Tone
+from .sonar import Sonar
+# from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
 from . import util
 
@@ -18,14 +18,13 @@ from wsmprpc import RPCStream
 class CozmarsServer:
     async def __aenter__(self):
         await self.lock.acquire()
-        self.lmotor = Motor(*self.conf['motor']['left'])
-        self.rmotor = Motor(*self.conf['motor']['right'])
+        self.motors = (Motor(*self.conf['motor']['left']), Motor(*self.conf['motor']['right']))
         # self.reset_servos()
         self.reset_motors()
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
         sonar_cfg = self.conf['sonar']
-        self.sonar = DistanceSensor(trigger=sonar_cfg['trigger'], echo=sonar_cfg['echo'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
+        self.sonar = Sonar(pin=sonar_cfg['pin'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
 
         self._sensor_event_queue = None
         self._button_last_press_time = 0
@@ -55,7 +54,7 @@ class CozmarsServer:
 
     async def __aexit__(self, exc_type, exc, tb):
         self.stop_all_motors()
-        for a in [self.sonar, self.lir, self.rir, self.lmotor, self.rmotor, self.cam]:
+        for a in [self.sonar, self.lir, self.rir, self.motors[0], self.motors[1], self.cam]:
             a and a.close()
         self._screen_backlight(None)
         self._speaker_power(None)
@@ -76,7 +75,7 @@ class CozmarsServer:
         self.mic_int = False
         self.event_loop = asyncio.get_running_loop()
 
-        self.button = Button(self.conf['button'])
+        self.button = Button(self.conf['touch'])
         self._double_press_threshold = .5
         self.cam = None
 
@@ -90,6 +89,8 @@ class CozmarsServer:
             rst=reset_pin,
             baudrate=24000000,
         )
+
+        self.leds = SonarLeds(getattr(board, f'D{self.sonar_cfg['led']}'))
 
         try: # the try-catch is for testing the server without servo driver connected
             self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
@@ -167,40 +168,36 @@ class CozmarsServer:
         2. the motors won't run when speed is lower than .2,
             so we map speed from (0, 1] => (.2, 1], (0, -1] => (-.2, -1] and 0 => 0
         '''
-        if not isinstance(sp, Iterable):
-            sp = (sp, sp)
-        sp = (s*self.motor_compensate['forward' if s>0 else 'backward'][i] for i, s in enumerate(sp))
-        return tuple((s*.8 + (.2 if s>0 else -.2) if s else 0) for s in sp)
+        sp = (None if s is None else s*self.motor_compensate['forward' if s>0 else 'backward'][i] for i, s in enumerate(sp))
+        return tuple(self.motors[i].value if s is None else (s*.8 + (.2 if s>0 else -.2) if s else 0) for i, s in enumerate(sp))
 
     def mapped_speed(self, sp):
         # real speed -> mapped speed
-        if not isinstance(sp, Iterable):
-            sp = (sp, sp)
         sp = (((s-((.2 if s>0 else -.2)))/.8 if s else 0) for s in sp)
         return tuple(max(-1, min(1, s/self.motor_compensate['forward' if s>0 else 'backward'][i])) for i, s in enumerate(sp))
 
     async def speed(self, speed=None, duration=None):
         if speed is None:
-            return self.mapped_speed((self.lmotor.value, self.rmotor.value))
+            return self.mapped_speed(self.motors[0].value, self.motors[1].value)
         speed = self.real_speed(speed)
-        while (self.lmotor.value, self.rmotor.value) != speed:
-            linc = speed[0] - self.lmotor.value
+        while (self.motors[0].value, self.motors[1].value) != speed:
+            linc = speed[0] - self.motors[0].value
             if 0< abs(linc) < .3:
-                self.lmotor.value = speed[0]
+                self.motors[0].value = speed[0]
             elif linc:
-                self.lmotor.value += .3 if linc> 0 else -.3
-            rinc = speed[1] - self.rmotor.value
+                self.motors[0].value += .3 if linc> 0 else -.3
+            rinc = speed[1] - self.motors[1].value
             if 0 < abs(rinc) < .3:
-                self.rmotor.value = speed[1]
+                self.motors[1].value = speed[1]
             elif rinc:
-                self.rmotor.value += .3 if rinc> 0 else -.3
+                self.motors[1].value += .3 if rinc> 0 else -.3
             await asyncio.sleep(.05)
         if duration:
             await asyncio.sleep(duration)
             await self.speed((0, 0))
 
     def stop_all_motors(self):
-        self.lmotor.value = self.rmotor.value = 0
+        self.motors[0].value = self.motors[1].value = 0
         if hasattr(self, 'servokit'):
             self.relax_lift()
             self.relax_head()
@@ -251,6 +248,46 @@ class CozmarsServer:
 
     def relax_head(self):
         self._head.relax()
+
+    def led_color(self, *args):
+        if args:
+            self.leds.color = c
+        else:
+            return self.leds.color
+
+    async def led_brightness(self, *args):
+        if not args:
+            return self.leds.brightness
+        br = args[0]
+        if not 0<= br <= 1:
+            raise ValueError('Brightness must be 0 to 1')
+        duration = speed = None
+        try:
+            duration = args[1]
+            speed = args[2]
+        except IndexError:
+            pass
+        if not (speed or duration):
+            self.leds.brightness = br
+            return
+        br = (self.leds._bright[i] if b is None else b for b in br)
+        elif speed:
+            if not 0 < speed <= 1 * self.servo_update_rate:
+                raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')
+            duration = max(tuple(abs(br[i] - self.leds._bright[i])/speed for i in range(2)))
+        steps = int(duration * self.servo_update_rate)
+        interval = 1/self.servo_update_rate
+        try:
+            inc = [(br[i]-self.leds._bright[i])/steps for i in range(2)]
+            for _ in range(steps):
+                await asyncio.sleep(interval)
+                self.leds._bright[0] += inc[0]
+                self.leds._bright[1] += inc[1]
+                self.leds.update()
+        except (ZeroDivisionError, ValueError):
+            pass
+        finally:
+            self.leds.brightness = br
 
     async def lift(self, *args):
         if not args:

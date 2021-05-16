@@ -2,11 +2,6 @@
 
 Firmware for Cozmars V2
 
-## Upgrades compared to [V1](https://github.com/r-cute/rcute-cozmars-server/tree/v1)
-
-* buzzer is replaced by a speaker
-* motors are slightly faster
-
 ## Setup
 
 * `sudo raspi-config`
@@ -46,15 +41,16 @@ Firmware for Cozmars V2
 ## Electronic parts
 
 * raspberry pi zero w
-* 15cm cable 72° lens OV5647 camera
+* ~~15cm~~ 6cm cable 72° lens OV5647 camera
 * 9g plastic blue servo X3
 * PCA9685 16-channel servo driver with capacitor (bend straight the 90° pins)
 * 1.14 inch color display
 * 3v ~~15r/m~~ 30r/m N20 motor X2
 * L298N motor driver
 * infrared sensor X2
-* ultrasonic distance sensor (3.3v compatible)
-* 12mmx12mm button
+* ultrasonic distance sensor (3.3v compatible) with rgb leds
+* ~~12mmx12mm button~~
+* TTP223 touch sensor
 * 112D on/off power button
 * INMP441 microphone (use 90° pins)
 * 3.7v battery (important: not 7.4v)
@@ -73,5 +69,4 @@ This project is open sourced for educational purpose, Commercial usage is prohib
 
 ## Related stuff
 
-* 3d model and build instructions: https://www.thingiverse.com/thing:4657644
 * python sdk: https://github.com/r-cute/rcute-cozmars
