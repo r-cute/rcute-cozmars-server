@@ -2,6 +2,7 @@ import asyncio, time
 from collections.abc import Iterable
 from gpiozero import Motor, Button, LineSensor#, TonalBuzzer, DistanceSensor
 from .sonar import Sonar
+from .sonar_leds import SonarLeds
 # from gpiozero.tones import Tone
 from .rcute_servokit import ServoKit
 from . import util
@@ -24,7 +25,7 @@ class CozmarsServer:
         self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
         self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
         sonar_cfg = self.conf['sonar']
-        self.sonar = Sonar(pin=sonar_cfg['pin'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'], queue_len=5, partial=True)
+        self.sonar = Sonar(pin=sonar_cfg['io'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'])#, queue_len=5, partial=True)
 
         self._sensor_event_queue = None
         self._button_last_press_time = 0
@@ -75,7 +76,7 @@ class CozmarsServer:
         self.mic_int = False
         self.event_loop = asyncio.get_running_loop()
 
-        self.button = Button(self.conf['touch'])
+        self.button = Button(self.conf['touch'], pull_up=False)
         self._double_press_threshold = .5
         self.cam = None
 
@@ -90,7 +91,7 @@ class CozmarsServer:
             baudrate=24000000,
         )
 
-        self.leds = SonarLeds(getattr(board, f'D{self.sonar_cfg['led']}'))
+        self.leds = SonarLeds(getattr(board, f"D{self.conf['sonar']['rgb']}"))
 
         try: # the try-catch is for testing the server without servo driver connected
             self.servokit = ServoKit(channels=16, freq=self.conf['servo']['freq'])
@@ -258,7 +259,7 @@ class CozmarsServer:
     async def led_brightness(self, *args):
         if not args:
             return self.leds.brightness
-        br = args[0]
+        br = tuple(ob if b is None else b for b, ob in zip(args[0], self.leds._bright))
         if not 0<= br <= 1:
             raise ValueError('Brightness must be 0 to 1')
         duration = speed = None
@@ -278,12 +279,12 @@ class CozmarsServer:
         steps = int(duration * self.servo_update_rate)
         interval = 1/self.servo_update_rate
         try:
-            inc = [(br[i]-self.leds._bright[i])/steps for i in range(2)]
+            inc = tuple((br[i]-self.leds._bright[i])/steps for i in range(2))
             for _ in range(steps):
                 await asyncio.sleep(interval)
                 self.leds._bright[0] += inc[0]
                 self.leds._bright[1] += inc[1]
-                self.leds.update()
+                self.leds._update()
         except (ZeroDivisionError, ValueError):
             pass
         finally:

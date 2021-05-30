@@ -1,8 +1,8 @@
 {
-  "touch": 4,
+  "touch": 14,
   "ir": {
-    "left": 12,
-    "right": 16
+    "left": 13,
+    "right": 26
   },
   "motor": {
     "right": [
@@ -23,38 +23,38 @@
     ]
   },
   "screen": {
-    "cs": 8,
-    "dc": 6,
-    "rst": 5
+    "cs": 7,
+    "dc": 5,
+    "rst": 6
   },
   "servo": {
     "backlight": {
-      "channel": 15
+      "channel": 9
     },
     "speaker": {
-      "channel": 0
+      "channel": 8
     },
     "freq": 60,
     "head": {
-      "channel": 10,
+      "channel": 3,
       "max_pulse": 1800,
       "min_pulse": 1350
     },
     "left_arm": {
-      "channel": 9,
+      "channel": 2,
       "max_pulse": 1600,
       "min_pulse": 2070
     },
     "right_arm": {
-      "channel": 11,
+      "channel": 1,
       "max_pulse": 920,
       "min_pulse": 490
     },
     "update_rate": 20
   },
   "sonar": {
-    "pin": 13,
-    "led": 16,
+    "io": 16,
+    "rgb": 12,
     "max": 0.5,
     "threshold": 0.1
   },
