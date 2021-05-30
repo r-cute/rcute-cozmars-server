@@ -271,7 +271,6 @@ class CozmarsServer:
         if not (speed or duration):
             self.leds.brightness = br
             return
-        br = (self.leds._bright[i] if b is None else b for b in br)
         elif speed:
             if not 0 < speed <= 1 * self.servo_update_rate:
                 raise ValueError(f'Speed must be 0 ~ {1*self.servo_update_rate}')

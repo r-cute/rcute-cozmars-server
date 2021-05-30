@@ -14,7 +14,7 @@ class SonarLeds:
     def brightness(self):
         return self._bright
 
-    @bright.setter
+    @brightness.setter
     def brightness(self, br):
         for i in range(2):
             if br[i] is not None:
@@ -42,7 +42,7 @@ class SonarLeds:
     def _update(self):
         for buf, c, br in zip(self._buffer, self._color, self._bright):
             # bgr -> grb
-            buf[0] = int(c[1] * b)
-            buf[1] = int(c[2] * b)
-            buf[2] = int(c[0] * b)
+            buf[0] = int(c[1] * br)
+            buf[1] = int(c[2] * br)
+            buf[2] = int(c[0] * br)
         neopixel_write(self._pin, self._buffer[0]*3+self._buffer[1]*3)
