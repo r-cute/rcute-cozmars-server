@@ -17,7 +17,7 @@ async def dim_screen(sec):
 def lightup_screen(sec):
     global cozmars_rpc_server, dim_screen_task, server_loop
     dim_screen_task and server_loop.call_soon_threadsafe(dim_screen_task.cancel)
-    cozmars_rpc_server._screen_backlight(.02)
+    cozmars_rpc_server._screen_backlight(.1)
     dim_screen_task = asyncio.run_coroutine_threadsafe(dim_screen(5), server_loop)
 
 async def delay_check_call(sec, cmd):
@@ -25,14 +25,15 @@ async def delay_check_call(sec, cmd):
     cozmars_rpc_server._screen_backlight(0)
     check_call(cmd.split(' '))
 
-async def button_poweroff():
+async def _poweroff():
     cozmars_rpc_server.screen.image(util.poweroff_screen())
-    cozmars_rpc_server._screen_backlight(.02)
+    cozmars_rpc_server._screen_backlight(.1)
     cozmars_rpc_server.speaker_volume(50)
     try:
         await util.beep(cozmars_rpc_server)
     except Exception as e:
-        print(e)
+        print(e)        
+    await zero_position()
     await delay_check_call(5, 'sudo poweroff')
 
 def idle():
@@ -40,7 +41,7 @@ def idle():
     cozmars_rpc_server.screen.image(util.splash_screen())
     cozmars_rpc_server.button.when_pressed = lambda: lightup_screen(5)
     cozmars_rpc_server.button.hold_time = 5
-    cozmars_rpc_server.button.when_held = lambda: asyncio.run_coroutine_threadsafe(button_poweroff(), server_loop)
+    cozmars_rpc_server.button.when_held = lambda: asyncio.run_coroutine_threadsafe(_poweroff(), server_loop)
 
 app = sanic.Sanic(__name__)
 
@@ -109,17 +110,19 @@ def restart_server(request):
     asyncio.create_task(delay_check_call(1, 'sudo systemctl restart cozmars.service'))
     return sanic.response.html(redirect_html(15, '/', """<p>{}...</p>""".format(_("Restarting service"))))
 
+async def zero_position():
+    await asyncio.gather(cozmars_rpc_server.lift(0, 1, None), cozmars_rpc_server.head(0, 1, None))
+
 @app.route('/poweroff')
 def poweroff(request):
-    cozmars_rpc_server.screen.image(util.poweroff_screen())
-    cozmars_rpc_server.screen_backlight.fraction = .1
-    asyncio.create_task(delay_check_call(5, 'sudo poweroff'))
-    return sanic.response.html("""<p>{}<br> {}</p>""".format(_("Shutting down"), _("Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side.")))
+    asyncio.create_task(_poweroff())
+    return sanic.response.html("""<p>{}<br> {}</p>""".format(_("Shutting down"), _("Please wait for the yellow light in the head to go out, then press the power button.")))
 
 @app.route('/reboot')
 def reboot(request):
     cozmars_rpc_server.screen.image(util.reboot_screen())
     cozmars_rpc_server.screen_backlight.fraction = .1
+    asyncio.create_task(zero_position())
     asyncio.create_task(delay_check_call(5, 'sudo reboot'))
     return sanic.response.html(redirect_html(60, '/', """<p>{}... </p> <p>{}</p>""".format(_("Rebooting"), _("This takes about a minute"))))
 

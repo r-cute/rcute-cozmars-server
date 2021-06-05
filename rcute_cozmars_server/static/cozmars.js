@@ -152,7 +152,7 @@ class Lift extends Component{
 			throw 'Cannot set both duration and speed';
 		this._timeout && clearTimeout(this._timeout);
 		var ret = await this._stub.rpc('lift', height==undefined?[]:[height, duration, speed]);
-		this._timeout = setTimeout(this.autoRelaxDelay*1000, this._stub.rpc('lift', [null]))
+		this._timeout = setTimeout(this.autoRelaxDelay*1000, this._stub.rpc('relax_lift', []))
 		return ret;
 	}
 }
@@ -162,13 +162,13 @@ class Head extends Component{
 		this.autoRelaxDelay = 1;
 	}
 	get maxAngle(){return 30}
-	get minAngle(){return -30}
+	get minAngle(){return -20}
 	async angle(angle, duration=null, speed=null) {
 		if (duration && speed)
 			throw 'Cannot set both duration and speed';
 		this._timeout && clearTimeout(this._timeout);
 		var ret = await this._stub.rpc('head', angle==undefined?[]:[angle, duration, speed]);
-		this._timeout = setTimeout(this.autoRelaxDelay*1000, this._stub.rpc('head', [null]))
+		this._timeout = setTimeout(this.autoRelaxDelay*1000, this._stub.rpc('relax_head', []))
 		return ret;
 	}
 }

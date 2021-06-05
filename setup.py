@@ -21,15 +21,15 @@ setuptools.setup(
     license="Non-Commercial",
     description=description,
     long_description=f"#rcute-cozmars-server\n\n{description}",
-    long_description_content_type="text/markdown",
+    # long_description_content_type="text/markdown",
     url="https://github.com/hyansuper/rcute-cozmars-server",
     packages=['rcute_cozmars_server'],
     install_requires=requirements,
     include_package_data=True,
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3.7",
         "Operating System :: OS Independent",
-    ),
+    ],
     # entry_points={
     #       'console_scripts': [
     #           'rcute_cozmars_server = rcute_cozmars_server.__main__:main'

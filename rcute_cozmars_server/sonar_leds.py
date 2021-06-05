@@ -2,11 +2,11 @@ import digitalio
 from neopixel_write import neopixel_write
 
 class SonarLeds:
-    def __init__(self, pin):
+    def __init__(self, pin, init_color=(255,255,255), init_bright=0):
         self._pin = digitalio.DigitalInOut(pin)
         self._pin.direction = digitalio.Direction.OUTPUT
-        self._color = [(0,0,0),(0,0,0)] #BGR
-        self._bright = [0,0]
+        self._color = [init_color, init_color] #BGR
+        self._bright = [init_bright, init_bright]
         self._buffer = bytearray(3), bytearray(3)
         self._update()
 

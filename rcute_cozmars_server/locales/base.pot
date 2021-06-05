@@ -24,7 +24,7 @@ msgid "Restarting service"
 msgstr ""
 
 #: __main__.py:113
-msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side."
+msgid "Please wait for the yellow light in the head to go out, then press the power button."
 msgstr ""
 
 #: __main__.py:113

@@ -22,8 +22,8 @@ class CozmarsServer:
         self.motors = (Motor(*self.conf['motor']['left']), Motor(*self.conf['motor']['right']))
         # self.reset_servos()
         self.reset_motors()
-        self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=True)
-        self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=True)
+        self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=False)
+        self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=False)
         sonar_cfg = self.conf['sonar']
         self.sonar = Sonar(pin=sonar_cfg['io'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'])#, queue_len=5, partial=True)
 
@@ -49,7 +49,7 @@ class CozmarsServer:
         self.sonar.when_in_range = cb('in_range', self.sonar, 'distance')
         self.sonar.when_out_of_range = cb('out_of_range', self.sonar, 'distance')
         self.screen.fill(0)
-        self._screen_backlight(.01)
+        self._screen_backlight(.1)
 
         return self
 
@@ -57,6 +57,7 @@ class CozmarsServer:
         self.stop_all_motors()
         for a in [self.sonar, self.lir, self.rir, self.motors[0], self.motors[1], self.cam]:
             a and a.close()
+        self.leds.brightness = 0, 0
         self._screen_backlight(None)
         self._speaker_power(None)
         self.lock.release()
@@ -100,8 +101,8 @@ class CozmarsServer:
             self.screen_backlight.fraction = 0
 
             self.speaker_power = self.servokit.servo[self.conf['servo']['speaker']['channel']]
-            self.speaker_power.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
-            self.speaker_power.fraction = 0
+            # self.speaker_power.set_pulse_width_range(0, 1000000//self.conf['servo']['freq'])
+            # self.speaker_power.fraction = 0
 
             self.servo_update_rate = self.conf['servo']['update_rate']
             self.reset_servos()
@@ -125,7 +126,7 @@ class CozmarsServer:
         self.rarm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['right_arm'])
         self.larm = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['left_arm'])
         self._head = CozmarsServer.conf_servo(self.servokit, self.conf['servo']['head'])
-        self._head.set_actuation_range(-30, 30)
+        self._head.set_actuation_range(-20, 30)
 
     def save_conf(self, conf_path=util.CONF):
         # only servo and motor configs are changed
@@ -192,7 +193,7 @@ class CozmarsServer:
                 self.motors[1].value = speed[1]
             elif rinc:
                 self.motors[1].value += .3 if rinc> 0 else -.3
-            await asyncio.sleep(.05)
+            await asyncio.sleep(.02)
         if duration:
             await asyncio.sleep(duration)
             await self.speed((0, 0))
@@ -209,7 +210,8 @@ class CozmarsServer:
 
     def _speaker_power(self, b):
         if hasattr(self, 'servokit'):
-            self.speaker_power.fraction = b
+            self.speaker_power._pwm_out.duty_cycle = 0xffff if b else 0
+            # self.speaker_power.fraction = b
 
     async def _servo(self, servo, *args):
         if not args:
@@ -252,7 +254,7 @@ class CozmarsServer:
 
     def led_color(self, *args):
         if args:
-            self.leds.color = c
+            self.leds.color = args[0]
         else:
             return self.leds.color
 
@@ -260,8 +262,9 @@ class CozmarsServer:
         if not args:
             return self.leds.brightness
         br = tuple(ob if b is None else b for b, ob in zip(args[0], self.leds._bright))
-        if not 0<= br <= 1:
-            raise ValueError('Brightness must be 0 to 1')
+        for b in br:
+            if not 0<= b <= 1:
+                raise ValueError('Brightness must be 0 to 1')
         duration = speed = None
         try:
             duration = args[1]

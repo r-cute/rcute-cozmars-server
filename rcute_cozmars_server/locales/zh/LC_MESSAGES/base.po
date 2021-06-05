@@ -24,8 +24,8 @@ msgid "Restarting service"
 msgstr "正在重启服务"
 
 #: __main__.py:113
-msgid "Please wait for the power light in the head of the Cozmars robot to go out before pressing the power button on the side."
-msgstr "软件关机后请等待 Cozmars 机器人头部内的电源灯熄灭后再按下侧面的电源键"
+msgid "Please wait for the yellow light in the head to go out, then press the power button."
+msgstr "软件关机后请等待 Cozmars 机器人头部内的黄灯熄灭后，再按下电源键断电"
 
 #: __main__.py:113
 msgid "Shutting down"

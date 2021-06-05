@@ -3,14 +3,17 @@
 <!-- <script src="https://cdn.jsdelivr.net/npm/@ygoe/msgpack@1.0.2/msgpack.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/hyansuper/wsmprpc/js/client.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/r-cute/rcute-cozmars-server/rcute_cozmars_server/static/cozmars.min.js"></script> -->
+<script src="static/msgpack.min.js"></script>
+<script src="static/client.js"></script>
+<script src="static/cozmars.js"></script>
 <script>
-function js_alter(b, src){{if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}}
+// function js_alter(b, src){{if(b)document.write(unescape("%3Cscript src='"+src+"' type='text/javascript'%3E%3C/script%3E"));}}
 function q(d){{return document.querySelector(d)}}
 function sleep(sec){{return new Promise((r,j)=>{{setTimeout(r,sec*1000)}})}}
 function rand_col() {{ return Math.floor(Math.random() * 256); }}
-js_alter(typeof msgpack=='undefined','static/msgpack.min.js');
-js_alter(typeof RPCClient=='undefined','static/wsmprpc.client.js');
-js_alter(typeof Cozmars=='undefined','static/cozmars.js');
+// js_alter(typeof msgpack=='undefined','static/msgpack.min.js');
+// js_alter(typeof RPCClient=='undefined','static/wsmprpc.client.js');
+// js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 </script>
 <h1>{_("Test")}</h1>
 	<p style='border:1px dashed gray'>
@@ -25,7 +28,7 @@ js_alter(typeof Cozmars=='undefined','static/cozmars.js');
 </table>
 <h3>{_("Servo test")}</h3>
 	<button onclick='robot.head.angle(30)'>{_("Head up")}</button>
-	<button onclick='robot.head.angle(-30)'>{_("Head down")}</button>
+	<button onclick='robot.head.angle(-20)'>{_("Head down")}</button>
 	<button onclick='robot.lift.height(1)'>{_("Lift up")}</button>
 	<button onclick='robot.lift.height(0)'>{_("Lift down")}</button>
 <h3>{_("Motor test")}  <input id='sec' type='number' size='1' value='2'/>{_("second")}</h3>
