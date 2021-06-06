@@ -12,7 +12,7 @@ parsed_template = util.parsed_template
 async def dim_screen(sec):
     global cozmars_rpc_server
     await asyncio.sleep(sec)
-    cozmars_rpc_server._screen_backlight(None)
+    cozmars_rpc_server._screen_backlight(.002)
 
 def lightup_screen(sec):
     global cozmars_rpc_server, dim_screen_task, server_loop
