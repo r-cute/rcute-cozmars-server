@@ -22,8 +22,9 @@ class CozmarsServer:
         self.motors = (Motor(*self.conf['motor']['left']), Motor(*self.conf['motor']['right']))
         # self.reset_servos()
         self.reset_motors()
-        self.lir = LineSensor(self.conf['ir']['left'], queue_len=3, sample_rate=10, pull_up=False)
-        self.rir = LineSensor(self.conf['ir']['right'], queue_len=3, sample_rate=10, pull_up=False)
+        self.lir = LineSensor(self.conf['ir']['left'], queue_len=1, sample_rate=10, pull_up=False)
+        self.rir = LineSensor(self.conf['ir']['right'], queue_len=1, sample_rate=10, pull_up=False)
+        self.mir = LineSensor(self.conf['ir']['middle'], queue_len=1, sample_rate=10, pull_up=False)
         sonar_cfg = self.conf['sonar']
         self.sonar = Sonar(pin=sonar_cfg['io'], max_distance=sonar_cfg['max'], threshold_distance=sonar_cfg['threshold'])#, queue_len=5, partial=True)
 
@@ -42,6 +43,7 @@ class CozmarsServer:
                 self._button_last_press_time = now
         self.lir.when_line = self.lir.when_no_line = cb('lir', self.lir, 'value')
         self.rir.when_line = self.rir.when_no_line = cb('rir', self.rir, 'value')
+        self.rir.when_line = self.rir.when_no_line = cb('mir', self.rir, 'value')
         self.button.hold_time = 1
         self.button.when_pressed = button_press_cb
         self.button.when_released = cb('pressed', self.button, 'is_pressed')
