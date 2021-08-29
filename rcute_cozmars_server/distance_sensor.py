@@ -43,7 +43,7 @@ class DistanceSensor:
         # save StartTime
         while GPIO.input(self.echo) == 0:
             StartTime = time.time()
-            if StartTime - TriggerTime > 0.001:
+            if StartTime - TriggerTime > 0.01:
                 return
 
         # save time of arrival
