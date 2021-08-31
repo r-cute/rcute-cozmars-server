@@ -29,7 +29,10 @@ async def button_poweroff():
     cozmars_rpc_server.screen.image(util.poweroff_screen())
     cozmars_rpc_server._screen_backlight(.02)
     cozmars_rpc_server.speaker_volume(50)
-    await util.beep(cozmars_rpc_server)
+    try:
+        await util.beep(cozmars_rpc_server)
+    except Exception as e:
+        print(e)
     await delay_check_call(5, 'sudo poweroff')
 
 def idle():
@@ -51,7 +54,10 @@ async def before_server_start(request, loop):
     lightup_screen(5)
     cozmars_rpc_server.speaker_volume(50)
     cozmars_rpc_server.microphone_volume(100)
-    await util.beep(cozmars_rpc_server)
+    try:
+        await util.beep(cozmars_rpc_server)
+    except Exception as e:
+        print(e)
 
 app.static('/static', util.STATIC)
 app.static('/conf', util.CONF, content_type="application/json")
