@@ -1,3 +1,5 @@
+ℹ️ This project is no longer under development, dev-v2 is the last updated branch
+
 # rcute-cozmars-server
 
 Firmware for Cozmars V2
